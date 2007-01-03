@@ -1,0 +1,130 @@
+<!--
+
+    Copyright 2006 Digital Aggregates Corp., Arvada CO 80001-0587, USA.
+    This file is part of the Digital Aggregates Desperado Library.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+    $Name$
+
+    $Id$
+
+-->
+
+<project name="buckaroo" default="all" basedir=".">
+
+	<property file="build.properties"/>
+
+	<target name="init">
+		<path id="myclasspath">
+			<pathelement location="${bin.jar}"/>
+			<pathelement location="${junit.jar}"/>
+			<pathelement path="${out.dir}"/>
+			<pathelement path="${tst.in.dir}"/>
+		</path>
+	</target>
+	
+	<target name="clean" depends="init">
+		<delete file="${bin.jar}"/>
+		<delete file="${src.zip}"/>
+		<delete file="${doc.zip}"/>
+		<delete dir="${out.dir}"/>	
+		<delete dir="${dist.dir}"/>	
+		<delete dir="${doc.dir}"/>	
+		<delete dir="${tst.out.dir}"/>	
+	</target>
+
+	<target name="outdir" depends="init">
+		<mkdir dir="${out.dir}"/>
+	</target>
+
+	<target name="distdir" depends="init">
+		<mkdir dir="${dist.dir}"/>
+	</target>
+
+	<target name="docdir" depends="init">
+		<mkdir dir="${doc.dir}"/>
+	</target>
+
+	<target name="tstoutdir" depends="init">
+		<mkdir dir="${tst.out.dir}"/>
+	</target>
+
+	<target name="compile" depends="outdir">
+		<javac source="1.5" srcdir="${src.dir}" destdir="${out.dir}"/>
+	</target>
+
+	<target name="tests" depends="outdir, binjar">
+		<javac source="1.5" srcdir="${tst.dir}" destdir="${out.dir}">
+			<classpath refid="myclasspath"/>
+		</javac>
+		<copy todir="${out.dir}">
+			<fileset dir="${tst.dir}">
+				<include name="**/*.properties"/>
+			</fileset>
+		</copy>
+	</target>
+	
+	<target name="doc" depends="docdir">
+		<javadoc Verbose="true" sourcepath="${src.dir}" destdir="${doc.dir}" author="yes" version="true" use="true" windowtitle="Buckaroo">
+		    <packageset dir="${src.dir}" defaultexcludes="yes">
+		      <include name="${packages}"/>
+		    </packageset>
+			<bottom><![CDATA[<i>Copyright &#169; 2006 Digital Aggregates Corporation, Arvada CO 80001-0587 USA.</i>]]></bottom>
+		</javadoc>
+	</target>
+	
+	<target name="binjar" depends="compile, distdir">
+		<jar destfile="${bin.jar}" basedir="${out.dir}" manifest="./MANIFEST.MF"/>
+	</target>
+
+	<target name="srczip" depends="distdir">
+		<zip destfile="${src.zip}" update="true">
+			<zipfileset dir="." prefix="${src.root}"/>
+		</zip>
+	</target>
+			
+	<target name="doczip" depends="doc, distdir">
+		<zip destfile="${doc.zip}" update="true">
+			<zipfileset dir="${doc.dir}" prefix="${html.root}"/>
+		</zip>
+	</target>
+	
+	<taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask">
+		<classpath>
+			<pathelement location="${ant.junit.jar}"/>
+			<pathelement location="${junit.jar}"/>
+		</classpath>
+	</taskdef>	
+
+	<target name="test" depends="tests, tstoutdir">
+		<junit printsummary="yes" haltonfailure="yes">
+		  <classpath refid="myclasspath"/>
+		  <formatter type="plain"/>
+		  <batchtest fork="yes" todir="${tst.out.dir}">
+		    <fileset dir="${tst.dir}">
+		      <include name="${unittests}"/>
+		    </fileset>
+		  </batchtest>
+		</junit>
+	</target>
+
+	<target name="build" depends="clean, compile"/>
+	
+	<target name="backup" depends="clean, srczip"/>
+
+	<target name="dist" depends="backup, binjar, doczip"/>
+	
+	<target name="all" depends="dist, test"/>
+
+</project>
