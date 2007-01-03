@@ -1,0 +1,5 @@
+Buckaroo-Copyright: Copyright 2006 Digital Aggregates Corporation, Arvada CO 80001-0587 USA
+Buckaroo-License: Apache License, Version 2.0
+Buckaroo-Author: Chip Overclock
+Buckaroo-Contact: coverclock@diag.com
+Buckaroo-Url: http://www.diag.com/navigation/downloads/Buckaroo.html
