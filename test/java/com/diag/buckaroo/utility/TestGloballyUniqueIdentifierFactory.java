@@ -86,13 +86,48 @@ public class TestGloballyUniqueIdentifierFactory extends TestCase {
 
 	public void test10() {
 		String prior = null;
-		for (int ii = 0; ii < 1000; ++ii) {
+		int index = 0;
+		int limit = 10000;
+		long now = System.currentTimeMillis();
+		long then = now + 10;
+		while ((index < limit) || (now < then)) {
 			String guid = guidf2.create();
 			assertNotNull(guid);
 			assertTrue(guidf2.isValid(guid));
 			assertFalse(guidf.isValid(guid));
 			if (prior != null) { assertFalse(guid.equals(prior)); }
 			prior = guid;
+			++index;
+			now = System.currentTimeMillis();
 		}
+	}
+	
+	public void test11() {
+		String[] args = { };
+		GloballyUniqueIdentifierFactory.main(args);
+	}
+	
+	public void test12() {
+		String[] args = {
+			"163df36f45b34dac7b1b285e18d8648e1d0a6e8ba8918286f1d4e4db903a59739b7df187933ecbd1d05fa69a0c076e986c32640256205ff94a059989742b31ea"
+		};
+		GloballyUniqueIdentifierFactory.main(args);
+	}
+	
+	public void test13() {
+		String[] args = {
+			"163df36f45b34dac7b1b285e18d8648e1d0a6e8ba8918286f1d4e4db903a59739b7df187933ecbd1d05fa69a0c076e986c32640256205ff94a059989742b31ea",
+			"7e72bead537abe58c472b5d5a3e300ca91e9c13f429f87a5d3d7ffdec81039ed80a642d1c6026d9b31856b228877501d1ae43f8bb79a5dd1deccdffac787bb3b"
+		};
+		GloballyUniqueIdentifierFactory.main(args);
+	}
+	
+	public void test14() {
+		String[] args = {
+			"163df36f45b34dac7b1b285e18d8648e1d0a6e8ba8918286f1d4e4db903a59739b7df187933ecbd1d05fa69a0c076e986c32640256205ff94a059989742b31ea",
+			"163df36f45b34dac7b1b285e18d8648e1d0a6e8ba8918286f1d4e4db903a59739b7df187933ecbd0d05fa69a0c076e986c32640256205ff94a059989742b31ea",
+			"7e72bead537abe58c472b5d5a3e300ca91e9c13f429f87a5d3d7ffdec81039ed80a642d1c6026d9b31856b228877501d1ae43f8bb79a5dd1deccdffac787bb3b"
+		};
+		GloballyUniqueIdentifierFactory.main(args);
 	}
 }
