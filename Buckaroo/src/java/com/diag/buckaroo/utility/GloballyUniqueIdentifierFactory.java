@@ -32,11 +32,11 @@ import javax.crypto.spec.PBEParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 
 /**
- * Generate a identifier, in the form of a String, that is guaranteed to be
+ * Generate a identifier, in the form of a String, that is as guaranteed to be
  * as unique in all time and space as we know how to make it, and do so in as
  * stateless a way as possible, while revealing as little as possible to the
  * outside world, and do so in a way that is verifiable. Note that this is
- * more or less an experiment; if you want something similar but much simpler,
+ * more or less an experiment; if you want something similar but far simpler,
  * try java.util.UUID.randomUUID().toString() instead.
  */
 public class GloballyUniqueIdentifierFactory {
@@ -102,7 +102,12 @@ public class GloballyUniqueIdentifierFactory {
 	}
 	
 	/**
-	 * Ctor.
+	 * Ctor. The salt, count, and password must be identical for both the encrypting
+	 * factory and the decrypting factory.
+	 * @param salt is a byte array of length eight containing an arbitrary salt value used
+	 * to generate a secret key.
+	 * @param count is an iteration count used to generate a secret key.
+	 * @param password is a character array of arbitrary size that is the password.
 	 */
 	public GloballyUniqueIdentifierFactory(byte[] salt, int count, char[] password) {
 		
