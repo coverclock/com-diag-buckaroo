@@ -45,7 +45,6 @@ public class GloballyUniqueIdentifierFactory {
 	private final static boolean DEBUG = false; // Do NOT log debugging stuff!
 	
 	private final static int SLACK_VALUE = 0x00;
-	private final static int BOGUS_VALUE = 0xff;
 	private final static int LOW_ORDER_BYTE_MASK = 0xff;
 	private final static int BITS_PER_BYTE = 8;
 	
@@ -65,18 +64,19 @@ public class GloballyUniqueIdentifierFactory {
 	private final static int COUNT  = 16;
 	private final static char[] PASSWORD = { 'g', 'i', 'l', 'g', 'a', 'm', 'e', 's', 'h' };
 
-	byte[] addressbytes;
-	byte[] hashcodebytes;
+	private byte[] addressbytes;
+	private byte[] hashcodebytes;
 	
-	SecureRandom randomizer;
-	MessageDigest checksummer;
-	SecretKey secret;
-	PBEParameterSpec parameter;
+	private SecureRandom randomizer;
+	private MessageDigest checksummer;
+	private SecretKey secret;
+	private PBEParameterSpec parameter;
 	
-	private static void wipe(byte[] plaintext, byte[] ciphertext) {
-		for (int ii = 0; ii < plaintext.length; ++ii) { plaintext[ii] = 0; }
-		if (ciphertext != plaintext) {
-			for (int ii = 0; ii < ciphertext.length; ++ii) { ciphertext[ii] = 0; }
+	private static void wipe(byte[] anytext) {
+		if (anytext != null) {
+			for (int ii = 0; ii < anytext.length; ++ii) {
+				anytext[ii] = 0;
+			}
 		}
 	}
 	
@@ -123,10 +123,9 @@ public class GloballyUniqueIdentifierFactory {
 				addressbytes[aindex++] = bits;
 			}
 		}
-		catch (Exception exception){
-			for (int ii = 0; ii < addressbytes.length; ++ii) {
-				addressbytes[ii] = (byte)BOGUS_VALUE;
-			}
+		catch (Exception exception) {
+			logger.log(Level.WARNING, exception.toString(), exception);
+			addressbytes = null;
 		}
 
 		hashcodebytes = new byte[HASHCODE_LENGTH];
@@ -170,10 +169,14 @@ public class GloballyUniqueIdentifierFactory {
 	 */
 	public String create()
 	{
+		if ((addressbytes == null) || (randomizer == null) || (checksummer == null) || (secret == null)) {
+			return null;
+		}
+		
 		byte[] plaintext = new byte[PLAINTEXT_LENGTH];
-		byte[] ciphertext = plaintext;
 		int bindex = 0;
 
+		// Unique to this millisecond.
 		long tod = System.currentTimeMillis();
 		for (int index = 0; index < TOD_LENGTH; ++index)
 		{
@@ -182,72 +185,56 @@ public class GloballyUniqueIdentifierFactory {
 		}
 		if (DEBUG) { System.err.println("tod[" + plaintext.length + "]=" + printable(plaintext)); }
 		
+		// Unique to this IP address.
 		for (byte bits : addressbytes)
 		{
 			plaintext[bindex++] = bits;
 		}
 		if (DEBUG) { System.err.println("address[" + addressbytes.length + "]=" + printable(addressbytes)); }
 		
+		// Unique to this instance.
 		for (byte bits : hashcodebytes)
 		{
 			plaintext[bindex++] = bits;
 		}
 		if (DEBUG) { System.err.println("hashcode[" + hashcodebytes.length + "]=" + printable(hashcodebytes)); }
 		
-		if (randomizer != null)
+		// TODO Use the nanotime here instead (or in addition to) a random number.
+		byte randombytes[] = new byte[RANDOM_LENGTH];
+	    randomizer.nextBytes(randombytes);
+	    for (byte bits : randombytes)
 		{
-			byte randombytes[] = new byte[RANDOM_LENGTH];
-		    randomizer.nextBytes(randombytes);
-		    for (byte bits : randombytes)
-			{
-				plaintext[bindex++] = bits;
-			}
-			if (DEBUG) { System.err.println("random[" + randombytes.length + "]=" + printable(randombytes)); }
+			plaintext[bindex++] = bits;
 		}
-		else
+		if (DEBUG) { System.err.println("random[" + randombytes.length + "]=" + printable(randombytes)); }
+		
+		// Checksum.
+		checksummer.reset();
+		checksummer.update(plaintext, 0, bindex);
+		byte[] checksum = checksummer.digest();
+		for (byte bits : checksum)
 		{
-			for (int index = 0; index < RANDOM_LENGTH; ++index)
-			{
-				plaintext[bindex++] = (byte)BOGUS_VALUE;
-			}
+			plaintext[bindex++] = bits;
 		}
+		if (DEBUG) { System.err.println("checksum[" + checksum.length + "]=" + printable(checksum)); }
 		
-		if (checksummer != null)
-		{
-			checksummer.reset();
-			checksummer.update(plaintext, 0, bindex);
-			byte[] checksum = checksummer.digest();
-			for (byte bits : checksum)
-			{
-				plaintext[bindex++] = bits;
-			}
-			if (DEBUG) { System.err.println("checksum[" + checksum.length + "]=" + printable(checksum)); }
-		}
-		else
-		{
-			for (int index = 0; index < CHECKSUM_LENGTH; ++index)
-			{
-				plaintext[bindex++] = (byte)BOGUS_VALUE;
-			}			
-		}
-		
-		if (DEBUG) { System.err.println("plaintext[" + plaintext.length + "]=" + printable(plaintext)); }
-		
-		if (secret != null) {
-			try {
-				Cipher cipher = Cipher.getInstance(CIPHER);
-				cipher.init(Cipher.ENCRYPT_MODE, secret, parameter);
-				ciphertext = cipher.doFinal(plaintext);
-			} catch (Exception exception) {
-				logger.log(Level.WARNING, exception.toString(), exception);
-			}
-		}
-		
+		if (DEBUG) { System.err.println("plaintext[" + plaintext.length + "]=" + printable(plaintext)); }		
+		// Encrypt.
+		byte[] ciphertext;
+		try {
+			Cipher cipher = Cipher.getInstance(CIPHER);
+			cipher.init(Cipher.ENCRYPT_MODE, secret, parameter);
+			ciphertext = cipher.doFinal(plaintext);
+		} catch (Exception exception) {
+			logger.log(Level.WARNING, exception.toString(), exception);
+			wipe(plaintext);
+			return null;
+		}		
 		if (DEBUG) { System.err.println("ciphertext[" + ciphertext.length + "]=" + printable(ciphertext)); }
 
 		String guid = printable(ciphertext);
-		wipe(plaintext, ciphertext);
 		if (DEBUG) { System.err.println("guid=" + guid); }
+		wipe(plaintext);
 		return guid;
 	}
 
@@ -287,7 +274,7 @@ public class GloballyUniqueIdentifierFactory {
 			else
 			{
 				if (DEBUG) { System.err.println("datum[" + ii + "]=" + datum1); }
-				wipe(plaintext, ciphertext);
+				wipe(plaintext);
 				return false;
 			}
 			int datum2 = bytes[(ii * 2) + 1] & LOW_ORDER_BYTE_MASK;
@@ -305,7 +292,7 @@ public class GloballyUniqueIdentifierFactory {
 			}
 			else
 			{
-				wipe(plaintext, ciphertext);
+				wipe(plaintext);
 				return false;
 			}
 			ciphertext[ii] = (byte)((datum1 << 4) + datum2);
@@ -319,7 +306,7 @@ public class GloballyUniqueIdentifierFactory {
 				cipher.init(Cipher.DECRYPT_MODE, secret, parameter);
 				plaintext = cipher.doFinal(ciphertext);
 			} catch (Exception exception) {
-				wipe(plaintext, ciphertext);
+				wipe(plaintext);
 				return false;
 			}
 		}
@@ -327,7 +314,7 @@ public class GloballyUniqueIdentifierFactory {
 		if (DEBUG) { System.err.println("plaintext[" + plaintext.length + "]=" + printable(plaintext)); }
 		
 		if (plaintext.length != PLAINTEXT_LENGTH) {
-			wipe(plaintext, ciphertext);
+			wipe(plaintext);
 			return false;
 		}
 		
@@ -340,13 +327,13 @@ public class GloballyUniqueIdentifierFactory {
 			{
 				if (checksum[ii] != plaintext[PLAINTEXT_LENGTH - CHECKSUM_LENGTH + ii])
 				{
-					wipe(plaintext, ciphertext);
+					wipe(plaintext);
 					return false;
 				}
 			}
 		}
 		
-		wipe(plaintext, ciphertext);
+		wipe(plaintext);
 		return true;
 	}
 
