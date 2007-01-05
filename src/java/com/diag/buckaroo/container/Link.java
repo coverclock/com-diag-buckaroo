@@ -117,17 +117,20 @@ public class Link<Type> {
 	
 	/**
 	 * If this Link is chained to one or more other Links, remove it from that chain.
-	 * Upon completion, this will be a standalone Link and the the chain that it was on
-	 * will be intact without this Link. If this Link was the root of the chain, the
-	 * resulting chain is left still rooted to this Link, which is unlikely to be what
-	 * you want. A reference to this Link is returned. If this Link is not chained to
-	 * other Links, null is returned. A remove is done in O(1) time.
+	 * Upon completion, this will be a valid unchained Link and the the chain that it was on
+	 * will be intact without this Link. If this Link was the root of a chain of just two
+	 * Links, the other Link is rooted back to itself. If this Link was the root of a chain
+	 * with more than two Links, the resulting chain is left still rooted to this Link, which
+	 * is unlikely to be what you want. A reference to this Link is returned. If this Link is
+	 * not chained to other Links, null is returned. A remove is done in O(1) time.
 	 * @return a reference to this Link if the remove was successful, false otherwise.
 	 */
 	public Link<Type> remove() {
 		if (isChained()) {
 			next.previous = previous;
+			if (next.previous == next) { next.root = next; }
 			previous.next = next;
+			if (previous.next == previous) { previous.root = previous; }
 			next = this;
 			previous = this;
 			root = this;
