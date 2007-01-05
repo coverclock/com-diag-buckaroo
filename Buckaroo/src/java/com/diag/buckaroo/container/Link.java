@@ -35,7 +35,7 @@ package com.diag.buckaroo.container;
  * value regarding generic types, anonymous inner classes, and functional programming.
  * Important safety tip: objects of this class are not thread safe. Synchronization is
  * the responsibility of the application. Developers may wish to consider synchronizing
- * on the root of a chain when doing insert or remove operations.
+ * on the root of a chain when doing insert, remove, or root operations.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
