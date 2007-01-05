@@ -82,9 +82,16 @@ public class TestLink extends TestCase {
 	
 	public void test01InsertRootRemove() {
 		
-		Link<Payload> link0 = new Link<Payload>(new Payload(0));
+		// Link 0
+		
+		Payload payload0 = new Payload(0);
+		Link<Payload> link0 = new Link<Payload>(payload0);
 		assertNotNull(link0);
 		assertTrue(link0.isValid());
+		
+		assertFalse(link0.isChained());
+		assertTrue(link0.isRoot());
+		assertTrue(link0.hasRoot(link0));
 		
 		assertNull(link0.remove());
 		assertNull(link0.insert(link0));
@@ -98,9 +105,16 @@ public class TestLink extends TestCase {
 		assertNotNull(link0.getPayload());
 		assertEquals(link0.getPayload().getSn(), 0);
 		
-		Link<Payload> link1 = new Link<Payload>(new Payload(1));
+		// Insert Link 1 after Link 0
+		
+		Payload payload1 = new Payload(1);
+		Link<Payload> link1 = new Link<Payload>(payload1);
 		assertNotNull(link1);
 		assertTrue(link1.isValid());
+		
+		assertFalse(link1.isChained());
+		assertTrue(link1.isRoot());
+		assertTrue(link1.hasRoot(link1));
 		
 		assertNull(link1.remove());
 		assertEquals(link1.insert(link0), link1);
@@ -118,6 +132,10 @@ public class TestLink extends TestCase {
 		assertNotNull(link0.getPayload());
 		assertEquals(link0.getPayload().getSn(), 0);
 		
+		assertTrue(link0.isChained());
+		assertTrue(link0.isRoot());
+		assertTrue(link0.hasRoot(link0));
+		
 		assertTrue(link1.isValid());
 		assertNull(link1.audit());
 		assertNotNull(link1.getRoot());
@@ -127,9 +145,20 @@ public class TestLink extends TestCase {
 		assertNotNull(link1.getPayload());
 		assertEquals(link1.getPayload().getSn(), 1);
 		
-		Link<Payload> link2 = new Link<Payload>(new Payload(2));
+		assertTrue(link1.isChained());
+		assertFalse(link1.isRoot());
+		assertTrue(link1.hasRoot(link0));
+		
+		// Insert Link 2 after Link 1
+		
+		Payload payload2 = new Payload(2);
+		Link<Payload> link2 = new Link<Payload>(payload2);
 		assertNotNull(link2);
 		assertTrue(link2.isValid());
+		
+		assertFalse(link2.isChained());
+		assertTrue(link2.isRoot());
+		assertTrue(link2.hasRoot(link2));
 		
 		assertNull(link2.remove());
 		assertEquals(link2.insert(link1), link2);
@@ -152,6 +181,10 @@ public class TestLink extends TestCase {
 		assertNotNull(link0.getPayload());
 		assertEquals(link0.getPayload().getSn(), 0);
 		
+		assertTrue(link0.isChained());
+		assertTrue(link0.isRoot());
+		assertTrue(link0.hasRoot(link0));
+		
 		assertTrue(link1.isValid());
 		assertNull(link1.audit());
 		assertNotNull(link1.getRoot());
@@ -160,6 +193,10 @@ public class TestLink extends TestCase {
 		assertEquals(link1.getPrevious(), link0);
 		assertNotNull(link1.getPayload());
 		assertEquals(link1.getPayload().getSn(), 1);
+		
+		assertTrue(link1.isChained());
+		assertFalse(link1.isRoot());
+		assertTrue(link1.hasRoot(link0));
 		
 		assertTrue(link2.isValid());
 		assertNull(link2.audit());		
@@ -170,9 +207,40 @@ public class TestLink extends TestCase {
 		assertNotNull(link2.getPayload());
 		assertEquals(link2.getPayload().getSn(), 2);
 		
+		assertTrue(link2.isChained());
+		assertFalse(link2.isRoot());
+		assertTrue(link2.hasRoot(link0));
+		
+		// Find all Payloads
+		
+		assertEquals(link0.find(payload0), link0);
+		assertEquals(link1.find(payload0), link0);
+		assertEquals(link2.find(payload0), link0);
+		assertEquals(link0.find(payload1), link1);
+		assertEquals(link1.find(payload1), link1);
+		assertEquals(link2.find(payload1), link1);
+		assertEquals(link0.find(payload2), link2);
+		assertEquals(link1.find(payload2), link2);
+		assertEquals(link2.find(payload2), link2);
+		
+		// Root chain from Link 0 to Link 1
+		
 		assertNull(link0.audit());
 		assertNull(link1.audit());
 		assertNull(link2.audit());
+		
+		assertTrue(link0.isRoot());
+		assertTrue(link0.hasRoot(link0));
+		assertFalse(link0.hasRoot(link1));
+		assertFalse(link0.hasRoot(link2));
+		assertFalse(link1.isRoot());
+		assertTrue(link1.hasRoot(link0));
+		assertFalse(link1.hasRoot(link1));
+		assertFalse(link1.hasRoot(link2));
+		assertFalse(link2.isRoot());
+		assertTrue(link2.hasRoot(link0));
+		assertFalse(link2.hasRoot(link1));
+		assertFalse(link2.hasRoot(link2));
 		
 		assertEquals(link0.getRoot(), link0);
 		assertEquals(link1.getRoot(), link0);
@@ -182,9 +250,24 @@ public class TestLink extends TestCase {
 		assertEquals(link1.getRoot(), link1);
 		assertEquals(link2.getRoot(), link1);
 		
+		assertFalse(link0.isRoot());
+		assertFalse(link0.hasRoot(link0));
+		assertTrue(link0.hasRoot(link1));
+		assertFalse(link0.hasRoot(link2));
+		assertTrue(link1.isRoot());
+		assertFalse(link1.hasRoot(link0));
+		assertTrue(link1.hasRoot(link1));
+		assertFalse(link1.hasRoot(link2));
+		assertFalse(link2.isRoot());
+		assertFalse(link2.hasRoot(link0));
+		assertTrue(link2.hasRoot(link1));
+		assertFalse(link2.hasRoot(link2));
+		
 		assertNull(link0.audit());
 		assertNull(link1.audit());
 		assertNull(link2.audit());
+		
+		// Remove Link 1
 
 		assertEquals(link1.remove(), link1);
 		assertNull(link1.remove());
@@ -198,6 +281,10 @@ public class TestLink extends TestCase {
 		assertNotNull(link0.getPayload());
 		assertEquals(link0.getPayload().getSn(), 0);
 		
+		assertTrue(link0.isChained());
+		assertFalse(link0.isRoot());
+		assertTrue(link0.hasRoot(link1));
+		
 		assertTrue(link1.isValid());
 		assertNull(link1.audit());
 		assertNotNull(link1.getRoot());
@@ -207,6 +294,10 @@ public class TestLink extends TestCase {
 		assertNotNull(link1.getPayload());
 		assertEquals(link1.getPayload().getSn(), 1);
 		
+		assertFalse(link1.isChained());
+		assertTrue(link1.isRoot());
+		assertTrue(link1.hasRoot(link1));
+		
 		assertTrue(link2.isValid());
 		assertNull(link2.audit());		
 		assertNotNull(link2.getRoot());
@@ -215,6 +306,12 @@ public class TestLink extends TestCase {
 		assertEquals(link2.getPrevious(), link0);
 		assertNotNull(link2.getPayload());
 		assertEquals(link2.getPayload().getSn(), 2);
+		
+		assertTrue(link2.isChained());
+		assertFalse(link2.isRoot());
+		assertTrue(link2.hasRoot(link1));
+		
+		// Re-insert Link 1 after Link 0
 		
 		assertEquals(link1.insert(link0), link1);
 		
@@ -227,6 +324,10 @@ public class TestLink extends TestCase {
 		assertNotNull(link0.getPayload());
 		assertEquals(link0.getPayload().getSn(), 0);
 		
+		assertTrue(link0.isChained());
+		assertFalse(link0.isRoot());
+		assertTrue(link0.hasRoot(link1));
+		
 		assertTrue(link1.isValid());
 		assertNull(link1.audit());
 		assertNotNull(link1.getRoot());
@@ -236,6 +337,10 @@ public class TestLink extends TestCase {
 		assertNotNull(link1.getPayload());
 		assertEquals(link1.getPayload().getSn(), 1);
 		
+		assertTrue(link1.isChained());
+		assertTrue(link1.isRoot());
+		assertTrue(link1.hasRoot(link1));
+		
 		assertTrue(link2.isValid());
 		assertNull(link2.audit());		
 		assertNotNull(link2.getRoot());
@@ -244,6 +349,12 @@ public class TestLink extends TestCase {
 		assertEquals(link2.getPrevious(), link1);
 		assertNotNull(link2.getPayload());
 		assertEquals(link2.getPayload().getSn(), 2);
+		
+		assertTrue(link2.isChained());
+		assertFalse(link2.isRoot());
+		assertTrue(link2.hasRoot(link1));
+		
+		// Re-remove Link 1
 		
 		assertEquals(link1.remove(), link1);
 		
@@ -256,6 +367,10 @@ public class TestLink extends TestCase {
 		assertNotNull(link0.getPayload());
 		assertEquals(link0.getPayload().getSn(), 0);
 		
+		assertTrue(link0.isChained());
+		assertFalse(link0.isRoot());
+		assertTrue(link0.hasRoot(link1));
+		
 		assertTrue(link1.isValid());
 		assertNull(link1.audit());
 		assertNotNull(link1.getRoot());
@@ -265,6 +380,10 @@ public class TestLink extends TestCase {
 		assertNotNull(link1.getPayload());
 		assertEquals(link1.getPayload().getSn(), 1);
 		
+		assertFalse(link1.isChained());
+		assertTrue(link1.isRoot());
+		assertTrue(link1.hasRoot(link1));
+		
 		assertTrue(link2.isValid());
 		assertNull(link2.audit());		
 		assertNotNull(link2.getRoot());
@@ -273,6 +392,24 @@ public class TestLink extends TestCase {
 		assertEquals(link2.getPrevious(), link0);
 		assertNotNull(link2.getPayload());
 		assertEquals(link2.getPayload().getSn(), 2);
+		
+		assertTrue(link2.isChained());
+		assertFalse(link2.isRoot());
+		assertTrue(link2.hasRoot(link1));
+		
+		// Find all Payloads
+		
+		assertEquals(link0.find(payload0), link0);
+		assertNull(link1.find(payload0));
+		assertEquals(link2.find(payload0), link0);
+		assertNull(link0.find(payload1));
+		assertEquals(link1.find(payload1), link1);
+		assertNull(link2.find(payload1));
+		assertEquals(link0.find(payload2), link2);
+		assertNull(link1.find(payload2));
+		assertEquals(link2.find(payload2), link2);
+		
+		// Remove Link 0
 
 		assertEquals(link0.remove(), link0);
 		assertNull(link0.remove());
@@ -287,6 +424,10 @@ public class TestLink extends TestCase {
 		assertNotNull(link0.getPayload());
 		assertEquals(link0.getPayload().getSn(), 0);
 		
+		assertFalse(link0.isChained());
+		assertTrue(link0.isRoot());
+		assertTrue(link0.hasRoot(link0));
+		
 		assertTrue(link1.isValid());
 		assertNull(link1.audit());
 		assertNotNull(link1.getRoot());
@@ -296,6 +437,10 @@ public class TestLink extends TestCase {
 		assertNotNull(link1.getPayload());
 		assertEquals(link1.getPayload().getSn(), 1);
 		
+		assertFalse(link1.isChained());
+		assertTrue(link1.isRoot());
+		assertTrue(link1.hasRoot(link1));
+		
 		assertTrue(link2.isValid());
 		assertNull(link2.audit());		
 		assertNotNull(link2.getRoot());
@@ -304,6 +449,22 @@ public class TestLink extends TestCase {
 		assertEquals(link2.getPrevious(), link2);
 		assertNotNull(link2.getPayload());
 		assertEquals(link2.getPayload().getSn(), 2);
+		
+		assertFalse(link2.isChained());
+		assertTrue(link2.isRoot());
+		assertTrue(link2.hasRoot(link2));
+		
+		// Find all Payloads
+		
+		assertEquals(link0.find(payload0), link0);
+		assertNull(link1.find(payload0));
+		assertNull(link2.find(payload0));
+		assertNull(link0.find(payload1));
+		assertEquals(link1.find(payload1), link1);
+		assertNull(link2.find(payload1));
+		assertNull(link0.find(payload2));
+		assertNull(link1.find(payload2));
+		assertEquals(link2.find(payload2), link2);
 		
 	}
 }
