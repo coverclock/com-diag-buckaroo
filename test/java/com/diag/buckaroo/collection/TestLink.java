@@ -618,4 +618,97 @@ public class TestLink extends TestCase {
 		assertEquals(sn, 3);
 
 	}
+	
+	public class Stack<Type> {
+		
+		Link<Type> root = new Link<Type>();
+	
+		public Link<Type> getRoot() { return root; }
+	
+		public synchronized Stack<Type> push(Link<Type> datum) {
+			datum.insert(root.getRoot());
+			return this;
+		}
+	
+		public synchronized Link<Type> pop() {
+			return root.getRoot().getNext().remove();
+		}
+	
+	}
+	
+	public class Queue<Type> {
+		
+		Link<Type> root = new Link<Type>();
+		
+		public Link<Type> getRoot() { return root; }
+		
+		public synchronized Queue<Type> put(Link<Type> datum) {
+			datum.insert(root.getRoot().getPrevious());
+			return this;
+		}
+		
+		public synchronized Link<Type> get() {
+			return root.getRoot().getNext().remove();
+		}
+
+	}
+	
+	Stack<Datum> stack = new Stack<Datum>();
+	Queue<Datum> queue = new Queue<Datum>();
+	
+	public class Datum {
+		int sn;
+		Link<Datum> queued = new Link<Datum>(this);
+		Link<Datum> stacked = new Link<Datum>(this);
+		public Datum(int sn) { this.sn = sn; queue.put(queued); }
+		public int getSn() { return sn; }
+		public Link<Datum> getQueued() { return queued; }
+		public Link<Datum> getStacked() { return stacked; }
+	}
+
+	public void test04EmbeddedQueueStack() {
+		
+		Datum datum0 = new Datum(0);
+		Datum datum1 = new Datum(1);
+		Datum datum2 = new Datum(2);
+		
+		int sn0 = 0;
+		for (Link<Datum> datum : queue.getRoot().getNext()) {
+			if (sn0 < 3) {
+				assertNotNull(datum.getPayload());
+				assertEquals(datum.getPayload().getSn(), sn0);
+			} else {
+				assertNull(datum.getPayload());
+			}
+			++sn0;
+		}
+		assertEquals(sn0, 4);
+		
+		assertEquals(queue.get().getPayload().getSn(), 0);
+		assertEquals(queue.get().getPayload().getSn(), 1);
+		assertEquals(queue.get().getPayload().getSn(), 2);
+		assertNull(queue.get());
+		
+		stack.push(datum0.getStacked())
+		     .push(datum1.getStacked())
+		     .push(datum2.getStacked());
+		
+		int sn1 = 2;
+		for (Link<Datum> datum : stack.getRoot().getNext()) {
+			if (sn1 >= 0) {
+				assertNotNull(datum.getPayload());
+				assertEquals(datum.getPayload().getSn(), sn1);
+			} else {
+				assertNull(datum.getPayload());
+			}
+			--sn1;
+		}
+		assertEquals(sn1, -2);
+		
+		assertEquals(stack.pop().getPayload().getSn(), 2);
+		assertEquals(stack.pop().getPayload().getSn(), 1);
+		assertEquals(stack.pop().getPayload().getSn(), 0);
+		assertNull(stack.pop());
+		
+	}
 }
