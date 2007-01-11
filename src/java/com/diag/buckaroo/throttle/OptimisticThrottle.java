@@ -30,44 +30,27 @@ package com.diag.buckaroo.throttle;
  */
 public class OptimisticThrottle implements Throttle {
 	
-	public OptimisticThrottle() {
-	}
+	public OptimisticThrottle() { }
 
-	public void reset() {
-	}
+	public void reset() { }
 
-	public void reset(long ticks) {
-	}
+	public void reset(long ticks) { }
 
-	public long admissable() {
-		return 0;
-	}
+	public long admissable() { return 0; }
 
-	public long admissable(long ticks) {
-		return 0;
-	}
+	public long admissable(long ticks) { return 0; }
 
-	public boolean commit() {
-		return true;
-	}
+	public boolean commit() { return true; }
 
-	public boolean rollback() {
-		return true;
-	}
+	public boolean rollback() { return true; }
 
-	public boolean isAlarmed() {
-		return false;
-	}
+	public boolean isAlarmed() { return false; }
+	
+	public boolean isValid() { return true; }
 
-	public long frequency() {
-		return 1000;
-	}
+	public long frequency() { return -1; }
 
-	public long time() {
-		return System.currentTimeMillis();
-	}
+	public long time() { return -1; }
 
-	public String toString() {
-		return this.getClass().getName() + "{}";
-	}
+	public String toString() { return this.getClass().getName() + "{}"; }
 }
