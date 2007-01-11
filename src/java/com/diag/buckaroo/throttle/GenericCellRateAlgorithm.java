@@ -43,7 +43,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 	long x;				// virtual scheduler expected elapsed ticks, from TM 4.0
 	long x1;			// virtual scheduler actual elapsed ticks, from TM 4.0
 	boolean alarmed;	// alarm state
-	boolean alarmed2;	// candidate alarm state
+	boolean alarmed1;	// candidate alarm state
 	
 	/**
 	 * Ctor.
@@ -79,7 +79,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 		now = ticks;
 		then = ticks - increment;
 		alarmed = false;
-		alarmed2 = false;
+		alarmed1 = false;
 	}
 
 	/* (non-Javadoc)
@@ -94,7 +94,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 */
 	public long admissable(long ticks) {
 		long delay = 0;
-		alarmed2 = false;
+		alarmed1 = false;
 		now = ticks;
 		long elapsed = now - then;
 		if (x <= elapsed) {
@@ -104,7 +104,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 			if (x1 > limit)
 			{
 				delay = x1 - limit;
-				alarmed2 = true;
+				alarmed1 = true;
 			}
 		}
 		return delay;
@@ -116,7 +116,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 	public boolean commit() {
 		then = now;
 		x = x1 + increment;
-		alarmed = alarmed2;
+		alarmed = alarmed1;
 		return !alarmed;
 	}
 
@@ -132,6 +132,13 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 */
 	public boolean isAlarmed() {
 		return alarmed;
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#isValid()
+	 */
+	public boolean isValid() {
+		return (now >= 0) || (increment >= 0) && (limit >= 0) && (x >= 0) && (x1 >= 0);
 	}
 
 	/* (non-Javadoc)
@@ -157,7 +164,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 			+ ",x=" + x
 			+ ",x1=" + x1
 			+ ",alarmed=" + alarmed
-			+ ",alarmed2=" + alarmed2
+			+ ",alarmed2=" + alarmed1
 			+ "}";
 	}
 }
