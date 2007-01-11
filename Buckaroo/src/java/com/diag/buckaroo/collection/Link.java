@@ -185,7 +185,8 @@ public class Link<Type> implements Iterable<Link<Type>> {
 	
 	/**
 	 * Sets this Link as the root of the chain (if any) that it is on. A root is done
-	 * in O(N) time.
+	 * in O(N) time. (The equivalent Desperado C++ method is Link::reroot() because of
+	 * the Link::root field: field and method names in C++ are in the same namespace.)
 	 * @return a reference to this Link.
 	 */
 	public Link<Type> root() {
