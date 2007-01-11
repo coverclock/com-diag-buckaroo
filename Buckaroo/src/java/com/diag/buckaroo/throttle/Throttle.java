@@ -104,6 +104,15 @@ public interface Throttle {
 	public boolean isAlarmed();
 	
 	/**
+	 * Returns true if the throttle is in a valid state, false otherwise.
+	 * This is used to audit the throttle state during unit testing. Unless
+	 * there is a bug in the implementation, this method will always return
+	 * true.
+	 * @return true if the throttle is in a valid state, false otherwise.
+	 */
+	public boolean isValid();
+	
+	/**
 	 * Return the number of ticks that are in one second. For example,
 	 * if this throttle measures time to one millisecond granularity, return
 	 * one thousand; to one microsecond, one million. Frequencies that are
