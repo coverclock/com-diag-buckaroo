@@ -163,16 +163,16 @@ public class GenericCellRateAlgorithm implements Throttle {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#begin()
+	 * @see com.diag.buckaroo.throttle.Throttle#admissible()
 	 */
-	public long admissable() {
-		return admissable(time());
+	public long admissible() {
+		return admissible(time());
 	}
 
 	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#begin(long)
+	 * @see com.diag.buckaroo.throttle.Throttle#admissible(long)
 	 */
-	public long admissable(long ticks) {
+	public long admissible(long ticks) {
 		long delay = 0;
 		alarmed1 = false;
 		now = ticks;

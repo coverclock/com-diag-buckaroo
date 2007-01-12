@@ -209,19 +209,19 @@ public class CellRateThrottle implements Throttle {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#begin()
+	 * @see com.diag.buckaroo.throttle.Throttle#admissible()
 	 */
-	public long admissable() {
-		return admissable(time());
+	public long admissible() {
+		return admissible(time());
 	}
 
 	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#begin(long)
+	 * @see com.diag.buckaroo.throttle.Throttle#admissible(long)
 	 */
-	public long admissable(long ticks) {
-		long peakAdmissable = peak.admissable(ticks);
-		long sustainedAdmissable = sustained.admissable(ticks);
-		return (peakAdmissable > sustainedAdmissable) ? peakAdmissable : sustainedAdmissable;
+	public long admissible(long ticks) {
+		long peakAdmissible = peak.admissible(ticks);
+		long sustainedAdmissible = sustained.admissible(ticks);
+		return (peakAdmissible > sustainedAdmissible) ? peakAdmissible : sustainedAdmissible;
 	}
 
 	/* (non-Javadoc)

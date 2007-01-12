@@ -46,14 +46,14 @@ public class OptimisticThrottle implements Throttle {
 	public void reset(long ticks) { }
 
 	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#admissable()
+	 * @see com.diag.buckaroo.throttle.Throttle#admissible()
 	 */
-	public long admissable() { return 0; }
+	public long admissible() { return 0; }
 
 	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#admissable(long)
+	 * @see com.diag.buckaroo.throttle.Throttle#admissible(long)
 	 */
-	public long admissable(long ticks) { return 0; }
+	public long admissible(long ticks) { return 0; }
 
 	/* (non-Javadoc)
 	 * @see com.diag.buckaroo.throttle.Throttle#commit()
