@@ -20,7 +20,7 @@
 package com.diag.buckaroo.throttle;
 
 /**
- * Implements a throttle that always admits.
+ * This class implements a throttle that always admits every event.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
@@ -30,27 +30,64 @@ package com.diag.buckaroo.throttle;
  */
 public class OptimisticThrottle implements Throttle {
 	
+	/**
+	 * Ctor.
+	 */
 	public OptimisticThrottle() { }
 
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#reset()
+	 */
 	public void reset() { }
 
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#reset(long)
+	 */
 	public void reset(long ticks) { }
 
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#admissable()
+	 */
 	public long admissable() { return 0; }
 
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#admissable(long)
+	 */
 	public long admissable(long ticks) { return 0; }
 
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#commit()
+	 */
 	public boolean commit() { return true; }
 
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#rollback()
+	 */
 	public boolean rollback() { return true; }
 
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#isAlarmed()
+	 */
 	public boolean isAlarmed() { return false; }
 	
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#isValid()
+	 */
 	public boolean isValid() { return true; }
 
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#frequency()
+	 */
 	public long frequency() { return -1; }
 
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#time()
+	 */
 	public long time() { return -1; }
 
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#toString()
+	 */
 	public String toString() { return this.getClass().getName() + "{}"; }
+	
 }

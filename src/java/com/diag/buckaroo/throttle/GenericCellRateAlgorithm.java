@@ -22,11 +22,23 @@ package com.diag.buckaroo.throttle;
 /**
  * This class implements a Generic Cell Rate Algorithm (GCRA) as specified in
  * the "Traffic Management Specification 4.0" specification [ Giroux, N., et al.,
- * af-tm-0056.000, ATM Forum, April 1996 ]. As specified in the standard,
+ * af-tm-0056.000, ATM Forum, April 1996, pp. 62-67 ]. As specified in the standard,
  * ticks are in microseconds. See also "ATM Traffic Management" [ J. L. Sloan,
- * Digital Aggregates Corp., August 2005 ]. This throttle tries to construct a
- * usable traffic contract even in the face of questionable parameters. This is
- * clearly more of an embedded mindset than an enterprise mind set.
+ * http://www.diag.com/reports/ATMTrafficManagement.html, Digital Aggregates Corp.,
+ * August 2005,  ]. Although this throttle is for historical reasons defined in terms
+ * of emission units of ATM cells, you can think of cells as any kind of event: packets, log
+ * messages, requests, etc. This throttle tries to construct a usable traffic contract even
+ * in the face of questionable parameters. This is clearly more of an embedded mindset
+ * than an enterprise mind set in which the constructor would just throw an exception.
+ * The parameters of the traffic contract are the Increment (the interarrival time in
+ * ticks between conforming cells) and the Limit (the total time in ticks that a cell
+ * stream may deviate from conformance). A constant bit rate (CBR) traffic contract based
+ * just on the Peak Cell Rate (PCR) and the Cell Delay Variation Tolerance (CDVT) would use
+ * just one of these throttles, GenericCellRateAlgorithm(PCR,CDVT). A variable bit rate
+ * (VBR) traffic contract based on PCR and CDVT plus the Sustainable Cell Rate (SCR) and the
+ * Maximum Burst Size (MBS) would use two of these throttles in conjunction, the prior
+ * throttle and GenericCellRateAlgorithm(1/SCR,(MBS-1)*((1/PCR)-(1/SCR))) where conforming
+ * cells would have to conform to both contracts simultaneously.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
@@ -35,6 +47,65 @@ package com.diag.buckaroo.throttle;
  * @date $Date$
  */
 public class GenericCellRateAlgorithm implements Throttle {
+	
+	/**
+	 * Convert the milliseconds used by the JVM to the microseconds used by the Throttle,
+	 * appropriate for use as an increment.
+	 * @param ms is milliseconds.
+	 * @return microseconds.
+	 */
+	public static long ms2increment(long ms) { return ms * 1000; }
+	
+	/**
+	 * Convert the milliseconds used by the JVM to the microseconds used by the GCRA,
+	 * appropriate for use as a limit.
+	 * @param ms is milliseconds.
+	 * @return microseconds.
+	 */
+	public static long ms2limit(long ms) { return ms * 1000; }
+	
+	/**
+	 * Convert the nanoseconds used by the JVM to the microseconds used by the Throttle,
+	 * rounding up by the ceiling, appropriate for use as an increment.
+	 * @param ns is nanoseconds.
+	 * @return microseconds.
+	 */
+	public static long ns2increment(long ns) { return (ns + 1000 - 1) / 1000; }
+	
+	/**
+	 * Convert the nanoseconds used by the JVM to the microseconds used by the Throttle,
+	 * truncating by the floor, appropriate for use as a limit.
+	 * @param ns is nanoseconds.
+	 * @return microseconds.
+	 */
+	public static long ns2limit(long ns) { return ns  / 1000; }
+	
+	/**
+	 * Convert the microseconds used by the Throttle to the milliseconds used by the JVM,
+	 * rounding up by the ceiling, appropriate as the sole parameter for
+	 * Thread.sleep(milliseconds).
+	 * @param us is microseconds.
+	 * @return milliseconds.
+	 */
+	public static long delay2ms(long us) { return (us + 1000 - 1) / 1000; }
+	
+	/**
+	 * Convert the microseconds used by the Throttle to the milliseconds used by the JVM,
+	 * extract just the whole number of milliseconds, appropriate for the first parameter
+	 * of Thread.sleep(milliseconds,nanoseconds).
+	 * @param us is microseconds.
+	 * @return milliseconds.
+	 */
+	public static long delay2ms1(long us) { return us / 1000; }
+	
+	/**
+	 * Convert the microseconds used by the Throttle to the nanoseconds used by the JVM,
+	 * extract just the fractional number of nanoseconds less than a millisecond,
+	 * appropriate for the second parameter of Thread.sleep(milliseconds,nanoseconds).
+	 * @param us is microseconds.
+	 * @return nanoseconds.
+	 */
+	public static int delay2ns2(long us) { return ((int)(us % 1000)) * 1000; }
 
 	long now;			// time of the most recent attempted emission in usec since the epoch
 	long then;			// time of the most recent committed emission in usec since the epoch
@@ -47,13 +118,6 @@ public class GenericCellRateAlgorithm implements Throttle {
 	
 	/**
 	 * Ctor.
-	 */
-	public GenericCellRateAlgorithm() {
-		this(0, Long.MAX_VALUE);
-	}
-	
-	/**
-	 * Ctor.
 	 * @param increment is the virtual scheduler increment or i in microseconds.
 	 * @param limit is the virtual scheduler limit or l in microseconds.
 	 */
@@ -61,6 +125,22 @@ public class GenericCellRateAlgorithm implements Throttle {
 		this.increment = (increment > 0) ? increment : 0;
 		this.limit = (limit > 0) ? limit : 0;
 		reset();
+	}
+	
+	/**
+	 * Ctor. The limit is zero to zero microseconds.
+	 * @param increment is the virtual scheduler increment or i in microseconds.
+	 */
+	public GenericCellRateAlgorithm(long increment) {
+		this(increment, 0);
+	}
+	
+	/**
+	 * Ctor. The increment is set to zero microseconds and the limit is
+	 * set to the maximum possible value.
+	 */
+	public GenericCellRateAlgorithm() {
+		this(0, Long.MAX_VALUE);
 	}
 
 	/* (non-Javadoc)
@@ -155,6 +235,9 @@ public class GenericCellRateAlgorithm implements Throttle {
 		return System.nanoTime() / 1000;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#toString()
+	 */
 	public String toString() {
 		return this.getClass().getName()
 			+ "{now=" + now
