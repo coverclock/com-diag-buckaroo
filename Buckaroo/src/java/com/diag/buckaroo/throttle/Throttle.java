@@ -34,7 +34,7 @@ package com.diag.buckaroo.throttle;
  * @date $Date$
  */
 public interface Throttle {
-
+	
 	/**
 	 * Reset this throttle to its just constructed state using
 	 * the current time of day. Resetting a throttle may cause
@@ -57,9 +57,11 @@ public interface Throttle {
 	 * Compute the number of ticks from the current time of day until the next event
 	 * is admissable. If the event is immediately admissable, zero is returned. The
 	 * event is guaranteed to be admissable if the caller delays the returned number
-	 * of ticks before calling this method again. This method computes a new throttle
+	 * of ticks before calling this method again. The very first event submitted to
+	 * this throttle is guaranteed to be admissable. This method computes a new throttle
 	 * state which must later be either committed if the event is emitted, or rolled back
-	 * if the event is not emitted.
+	 * if the event is not emitted. This is done to accomodate different throttle
+	 * implementations which may require this behavior.
 	 * @return the number of ticks from the current time until the next event is admissable
 	 * or negative if this cannot be determined by this type of throttle.
 	 */
@@ -69,9 +71,11 @@ public interface Throttle {
 	 * Compute the number of ticks from the specified time of day until the next event
 	 * is admissable. If the event is immediately admissable, zero is returned. The
 	 * event is guaranteed to be admissable if the caller delays the returned number
-	 * of ticks before calling this method again. This method computes a new throttle
+	 * of ticks before calling this method again.  The very first event submitted to
+	 * this throttle is guaranteed to be admissable. This method computes a new throttle
 	 * state which must later be either committed if the event is emitted, or rolled back
-	 * if the event is not emitted.
+	 * if the event is not emitted. This is done to accomodate different throttle
+	 * implementations which may require this behavior.
 	 * @param ticks is the time of day in the number of ticks since the epoch.
 	 * @return the number of ticks from the current time until the next event is admissable
 	 * or a negative number if this cannot be determined by this type of throttle (such
