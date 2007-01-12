@@ -31,19 +31,19 @@ public class TestCellRateThrottle extends TestCase {
 		crt.reset(ticks);
 		assertTrue(crt.isValid());
 		assertNotNull(crt.toString());
-		assertEquals(crt.admissable(ticks), 0);
+		assertEquals(crt.admissible(ticks), 0);
 		assertFalse(crt.isAlarmed());
 		assertTrue(crt.rollback());
 		assertFalse(crt.isAlarmed());
-		assertEquals(crt.admissable(ticks), 0);
+		assertEquals(crt.admissible(ticks), 0);
 		assertFalse(crt.isAlarmed());
 		assertTrue(crt.rollback());
 		assertFalse(crt.isAlarmed());
-		assertEquals(crt.admissable(ticks), 0);
+		assertEquals(crt.admissible(ticks), 0);
 		assertFalse(crt.isAlarmed());
 		crt.reset(ticks);
 		assertFalse(crt.isAlarmed());
-		assertEquals(crt.admissable(ticks), 0);
+		assertEquals(crt.admissible(ticks), 0);
 		assertTrue(crt.commit());
 		assertFalse(crt.isAlarmed());
 	}
@@ -144,11 +144,11 @@ public class TestCellRateThrottle extends TestCase {
 		
 		long then = System.currentTimeMillis();
 		for (int ii = 0; ii < 20; ++ii) {
-			long delay = CellRateThrottle.delay2ms(crt.admissable());
+			long delay = CellRateThrottle.delay2ms(crt.admissible());
 			while (delay > 0) {
 				crt.rollback();
 				try { Thread.sleep(delay); } catch (Exception ignore) { }
-				delay = CellRateThrottle.delay2ms(crt.admissable());
+				delay = CellRateThrottle.delay2ms(crt.admissible());
 			}
 			crt.commit();
 			assertFalse(crt.isAlarmed());
@@ -168,11 +168,11 @@ public class TestCellRateThrottle extends TestCase {
 		
 		long then = System.currentTimeMillis();
 		for (int ii = 0; ii < 20; ++ii) {
-			long delay = CellRateThrottle.delay2ms(crt.admissable());
+			long delay = CellRateThrottle.delay2ms(crt.admissible());
 			while (delay > 0) {
 				crt.rollback();
 				try { Thread.sleep(delay); } catch (Exception ignore) { }
-				delay = CellRateThrottle.delay2ms(crt.admissable());
+				delay = CellRateThrottle.delay2ms(crt.admissible());
 			}
 			crt.commit();
 			assertFalse(crt.isAlarmed());

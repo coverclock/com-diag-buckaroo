@@ -57,29 +57,29 @@ public class TestGeometricThrottle extends TestCase {
 		Throttle gt = new GeometricThrottle();
 		assertNotNull(gt);
 		
-		assertEquals(gt.admissable(), 0L);
+		assertEquals(gt.admissible(), 0L);
 		assertTrue(gt.commit());
 		assertFalse(gt.isAlarmed());
 		
-		assertEquals(gt.admissable(), 0L);
+		assertEquals(gt.admissible(), 0L);
 		assertTrue(gt.commit());
 		assertFalse(gt.isAlarmed());
 		
-		assertTrue(gt.admissable() < 0L);
+		assertTrue(gt.admissible() < 0L);
 		assertTrue(gt.rollback());
 		assertFalse(gt.isAlarmed());
 		
-		assertEquals(gt.admissable(), 0L);
+		assertEquals(gt.admissible(), 0L);
 		assertTrue(gt.commit());
 		assertFalse(gt.isAlarmed());
 		
-		assertTrue(gt.admissable() < 0L);
+		assertTrue(gt.admissible() < 0L);
 		assertFalse(gt.commit());
 		assertTrue(gt.isAlarmed());
 		
 		gt.reset();
 		
-		assertEquals(gt.admissable(), 0L);
+		assertEquals(gt.admissible(), 0L);
 		assertTrue(gt.commit());
 		assertFalse(gt.isAlarmed());
 		
@@ -99,7 +99,7 @@ public class TestGeometricThrottle extends TestCase {
 				assertFalse(gt.isAlarmed());
 				++total;
 				if (total > 0xffffffffL) { break; }
-				else if (gt.admissable() == 0) { gt.commit(); ++admitted; break; }
+				else if (gt.admissible() == 0) { gt.commit(); ++admitted; break; }
 				else { gt.rollback(); ++rejected; }
 			}
 			if (total > 0xffffffffL) { break; }
