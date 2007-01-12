@@ -20,7 +20,29 @@
 package com.diag.buckaroo.throttle;
 
 /**
- * Defines the standard interface to a rate control mechanism.
+ * Defines the standard interface to a rate control mechanism. Before emitting an event
+ * (whatever "emit" and "event" means in the context of the application), the application
+ * calls the throttle to ask if the event is "admissible". If it is, the application emits
+ * the event and commits the throttle state. If it is not, the application rolls back the
+ * throttle state and does not emit the event. Throttles may be event-based or time-based.
+ * Event-based throttles (like the Geometric Throttle) base admission decisions on something
+ * other than time, such as the number of events already admitted. Time-based throttles
+ * (such as the Generic Cell Rate Algorithm or GCRA) base admission decisions on chronological
+ * factors such as the interarrival time between events. Throttles may be compounded together
+ * to form a composite throttle (such as the Cell Rate Throttle, which is implemented using
+ * two Generic Cell Rate Algorithms). If the application commits the Throttle for an event
+ * which was not admissible, the Throttle becomes "alarmed". There are legitimate reasons
+ * for doing this, such as choosing to violate the Throttle's traffic contract rather than
+ * allow an internal buffer to overflow. Throttles may be "reset" at any time to return them
+ * to their initial state. The first event for any Throttle is guaranteed to be admissible.
+ * Event streams which conform to whatever traffic contract the Throttle implements are
+ * guaranteed to not alarm the Throttle. Time-based throttles make implement different
+ * time granularities, for example, milliseconds, microseconds, or even nanoseconds,
+ * depending on their underlying implementation. This granularity is known as the Throttle's
+ * frequency, and any Throttle may be queried as to its frequency. Every time-based Throttle
+ * implements a method that returns the current time in units appropriate to its frequency.
+ * The current time may be equivalent to wall clock time relative to some epoch, or merely a
+ * monotonically increasing counter suitable for measuring arbitrary time intervals.
  * 
  * Both time of day values and time duration values are kept in sixty-four bit longwords
  * and are measured in "ticks" relative to some epoch, that is, in time units specific to
@@ -55,39 +77,39 @@ public interface Throttle {
 
 	/**
 	 * Compute the number of ticks from the current time of day until the next event
-	 * is admissable. If the event is immediately admissable, zero is returned. The
-	 * event is guaranteed to be admissable if the caller delays the returned number
+	 * is admissible. If the event is immediately admissible, zero is returned. The
+	 * event is guaranteed to be admissible if the caller delays the returned number
 	 * of ticks before calling this method again. The very first event submitted to
-	 * this throttle is guaranteed to be admissable. This method computes a new throttle
+	 * this throttle is guaranteed to be admissible. This method computes a new throttle
 	 * state which must later be either committed if the event is emitted, or rolled back
 	 * if the event is not emitted. This is done to accomodate different throttle
 	 * implementations which may require this behavior.
-	 * @return the number of ticks from the current time until the next event is admissable
+	 * @return the number of ticks from the current time until the next event is admissible
 	 * or negative if this cannot be determined by this type of throttle.
 	 */
-	public long admissable();
+	public long admissible();
 
 	/**
 	 * Compute the number of ticks from the specified time of day until the next event
-	 * is admissable. If the event is immediately admissable, zero is returned. The
-	 * event is guaranteed to be admissable if the caller delays the returned number
+	 * is admissible. If the event is immediately admissible, zero is returned. The
+	 * event is guaranteed to be admissible if the caller delays the returned number
 	 * of ticks before calling this method again.  The very first event submitted to
-	 * this throttle is guaranteed to be admissable. This method computes a new throttle
+	 * this throttle is guaranteed to be admissible. This method computes a new throttle
 	 * state which must later be either committed if the event is emitted, or rolled back
 	 * if the event is not emitted. This is done to accomodate different throttle
 	 * implementations which may require this behavior.
 	 * @param ticks is the time of day in the number of ticks since the epoch.
-	 * @return the number of ticks from the current time until the next event is admissable
+	 * @return the number of ticks from the current time until the next event is admissible
 	 * or a negative number if this cannot be determined by this type of throttle (such
-	 * throttles typically return either zero meaning admissable now, or a negative number
+	 * throttles typically return either zero meaning admissible now, or a negative number
 	 * meaning not yet).
 	 */
-	public long admissable(long ticks);
+	public long admissible(long ticks);
 
 	/**
 	 * Commit the current throttle state computed by the prior call to the begin
 	 * method. This method must be called if the event was emitted regardless of whether
-	 * or not it was admissable. Committing an event which is not admissable alarms the
+	 * or not it was admissible. Committing an event which is not admissible alarms the
 	 * throttle. The alarm may clear if later event emissions conform to its traffic contract.
 	 * @return true if the throttle is not currently alarmed, false otherwise.
 	 */
@@ -96,7 +118,7 @@ public interface Throttle {
 	/**
 	 * Rollback the current throttle state computed by the prior call to the begin
 	 * method. Call this method if the event was not emitted regardless of whether or
-	 * not it was admissable. The throttle state is guaranteed not to be modified.
+	 * not it was admissible. The throttle state is guaranteed not to be modified.
 	 * @return true if the throttle is not currently alarmed, false otherwise.
 	 */
 	public boolean rollback();

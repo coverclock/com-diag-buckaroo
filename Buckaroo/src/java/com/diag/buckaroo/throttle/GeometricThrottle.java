@@ -25,7 +25,7 @@ package com.diag.buckaroo.throttle;
  * event, the second event, the fourth event, the eighth event, up to and including the
  * thirtieth event, after which no more events are admitted until the throttle is reset.
  * This is very useful in embedded systems for controlling error messages to a log or a
- * console; only emit the error message if it is admissable, and reset the Geometric
+ * console; only emit the error message if it is admissible, and reset the Geometric
  * throttle when the error clears. Several error messages are emitted initially, then with
  * ever decreasing frequency, then no more. This is a good pattern if the log is being
  * watched in real-time, while at the same time not flooding the log with closely spaced
@@ -72,9 +72,9 @@ public class GeometricThrottle implements Throttle {
 	public void reset(long ticks) { reset(); }
 
 	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#admissable()
+	 * @see com.diag.buckaroo.throttle.Throttle#admissible()
 	 */
-	public long admissable() {
+	public long admissible() {
 	    long delay = 0;
 
 	    do {
@@ -102,9 +102,9 @@ public class GeometricThrottle implements Throttle {
 	}
 
 	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#admissable(long)
+	 * @see com.diag.buckaroo.throttle.Throttle#admissible(long)
 	 */
-	public long admissable(long ticks) { return admissable(); }
+	public long admissible(long ticks) { return admissible(); }
 
 	/* (non-Javadoc)
 	 * @see com.diag.buckaroo.throttle.Throttle#commit()
