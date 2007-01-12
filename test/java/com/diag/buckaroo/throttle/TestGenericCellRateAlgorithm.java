@@ -32,19 +32,19 @@ public class TestGenericCellRateAlgorithm extends TestCase {
 		gcra.reset(ticks);
 		assertTrue(gcra.isValid());
 		assertNotNull(gcra.toString());
-		assertEquals(gcra.admissable(ticks), 0);
+		assertEquals(gcra.admissible(ticks), 0);
 		assertFalse(gcra.isAlarmed());
 		assertTrue(gcra.rollback());
 		assertFalse(gcra.isAlarmed());
-		assertEquals(gcra.admissable(ticks), 0);
+		assertEquals(gcra.admissible(ticks), 0);
 		assertFalse(gcra.isAlarmed());
 		assertTrue(gcra.rollback());
 		assertFalse(gcra.isAlarmed());
-		assertEquals(gcra.admissable(ticks), 0);
+		assertEquals(gcra.admissible(ticks), 0);
 		assertFalse(gcra.isAlarmed());
 		gcra.reset(ticks);
 		assertFalse(gcra.isAlarmed());
-		assertEquals(gcra.admissable(ticks), 0);
+		assertEquals(gcra.admissible(ticks), 0);
 		assertTrue(gcra.commit());
 		assertFalse(gcra.isAlarmed());
 	}
@@ -96,19 +96,19 @@ public class TestGenericCellRateAlgorithm extends TestCase {
 		assertTrue(gcra.isValid());
 		assertNotNull(gcra.toString());
 		
-		assertEquals(gcra.admissable(), 0);
+		assertEquals(gcra.admissible(), 0);
 		assertFalse(gcra.isAlarmed());
 		
 		assertTrue(gcra.rollback());
 		assertFalse(gcra.isAlarmed());
 		
-		assertEquals(gcra.admissable(gcra.time()), 0);
+		assertEquals(gcra.admissible(gcra.time()), 0);
 		assertFalse(gcra.isAlarmed());
 		
 		assertTrue(gcra.rollback());
 		assertFalse(gcra.isAlarmed());
 		
-		assertEquals(gcra.admissable(), 0);
+		assertEquals(gcra.admissible(), 0);
 		assertFalse(gcra.isAlarmed());
 		
 		gcra.reset();
@@ -125,20 +125,20 @@ public class TestGenericCellRateAlgorithm extends TestCase {
 		assertTrue(gcra.isValid());
 		
 		long instantaneous = gcra.time();
-		assertEquals(gcra.admissable(instantaneous), 0);
+		assertEquals(gcra.admissible(instantaneous), 0);
 		assertTrue(gcra.rollback());
 		assertFalse(gcra.isAlarmed());
 		
-		assertEquals(gcra.admissable(instantaneous), 0);
+		assertEquals(gcra.admissible(instantaneous), 0);
 		assertTrue(gcra.commit());
 		assertFalse(gcra.isAlarmed());
 		
-		assertTrue(gcra.admissable(instantaneous) > 0);
+		assertTrue(gcra.admissible(instantaneous) > 0);
 		assertFalse(gcra.commit());
 		assertTrue(gcra.isAlarmed());
 		gcra.reset(instantaneous);
 		
-		assertEquals(gcra.admissable(instantaneous), 0);
+		assertEquals(gcra.admissible(instantaneous), 0);
 		assertTrue(gcra.commit());
 		assertFalse(gcra.isAlarmed());
 		
@@ -151,15 +151,15 @@ public class TestGenericCellRateAlgorithm extends TestCase {
 		assertTrue(gcra.isValid());
 		
 		long now = gcra.time();
-		assertEquals(gcra.admissable(now), 0);
+		assertEquals(gcra.admissible(now), 0);
 		assertTrue(gcra.rollback());
 		assertFalse(gcra.isAlarmed());
 		
-		assertEquals(gcra.admissable(now), 0);
+		assertEquals(gcra.admissible(now), 0);
 		assertTrue(gcra.commit());
 		assertFalse(gcra.isAlarmed());
 		
-		long delay = gcra.admissable(now);
+		long delay = gcra.admissible(now);
 		assertEquals(delay, 1);
 		assertTrue(gcra.rollback());
 		assertFalse(gcra.isAlarmed());
@@ -167,12 +167,12 @@ public class TestGenericCellRateAlgorithm extends TestCase {
 		for (int ii = 0; ii < 1000; ++ii) {
 			
 			now += delay;
-			delay = gcra.admissable(now);
+			delay = gcra.admissible(now);
 			assertEquals(delay, 0);
 			assertTrue(gcra.commit());
 			assertFalse(gcra.isAlarmed());
 			
-			delay = gcra.admissable(now);
+			delay = gcra.admissible(now);
 			assertEquals(delay, 1);
 			assertTrue(gcra.rollback());
 			assertFalse(gcra.isAlarmed());
@@ -187,15 +187,15 @@ public class TestGenericCellRateAlgorithm extends TestCase {
 		assertTrue(gcra.isValid());
 		
 		long now = gcra.time();
-		assertEquals(gcra.admissable(now), 0);
+		assertEquals(gcra.admissible(now), 0);
 		assertTrue(gcra.rollback());
 		assertFalse(gcra.isAlarmed());
 		
-		assertEquals(gcra.admissable(now), 0);
+		assertEquals(gcra.admissible(now), 0);
 		assertTrue(gcra.commit());
 		assertFalse(gcra.isAlarmed());
 		
-		long delay = gcra.admissable(now);
+		long delay = gcra.admissible(now);
 		assertEquals(delay, 1000);
 		assertTrue(gcra.rollback());
 		assertFalse(gcra.isAlarmed());
@@ -203,12 +203,12 @@ public class TestGenericCellRateAlgorithm extends TestCase {
 		for (int ii = 0; ii < 1000; ++ii) {
 			
 			now += delay;
-			delay = gcra.admissable(now);
+			delay = gcra.admissible(now);
 			assertEquals(delay, 0);
 			assertTrue(gcra.commit());
 			assertFalse(gcra.isAlarmed());
 			
-			delay = gcra.admissable(now);
+			delay = gcra.admissible(now);
 			assertEquals(delay, 1000);
 			assertTrue(gcra.rollback());
 			assertFalse(gcra.isAlarmed());
@@ -223,91 +223,91 @@ public class TestGenericCellRateAlgorithm extends TestCase {
 		assertTrue(gcra.isValid());
 		
 		long now = gcra.time();
-		assertEquals(gcra.admissable(now), 0);
+		assertEquals(gcra.admissible(now), 0);
 		assertTrue(gcra.rollback());
 		assertFalse(gcra.isAlarmed());
 		
-		assertEquals(gcra.admissable(now), 0);
+		assertEquals(gcra.admissible(now), 0);
 		assertTrue(gcra.commit());
 		assertFalse(gcra.isAlarmed());
 		
-		long delay = gcra.admissable(now);
+		long delay = gcra.admissible(now);
 		assertEquals(delay, 750);
 		assertTrue(gcra.rollback());
 		assertFalse(gcra.isAlarmed());
 		
 		now += 900;
-		delay = gcra.admissable(now);
+		delay = gcra.admissible(now);
 		assertEquals(delay, 0);
 		assertTrue(gcra.commit());
 		assertFalse(gcra.isAlarmed());
 		
 		now += 900;
-		delay = gcra.admissable(now);
+		delay = gcra.admissible(now);
 		assertEquals(delay, 0);
 		assertTrue(gcra.commit());
 		assertFalse(gcra.isAlarmed());
 		
 		now += 900;
-		delay = gcra.admissable(now);
+		delay = gcra.admissible(now);
 		assertEquals(delay, 50);
 		assertTrue(gcra.rollback());
 		assertFalse(gcra.isAlarmed());
 		
 		now += 50;
-		delay = gcra.admissable(now);
+		delay = gcra.admissible(now);
 		assertEquals(delay, 0);
 		assertTrue(gcra.commit());
 		assertFalse(gcra.isAlarmed());
 		
-		delay = gcra.admissable(now);
+		delay = gcra.admissible(now);
 		assertEquals(delay, 1000);
 		assertTrue(gcra.rollback());
 		assertFalse(gcra.isAlarmed());
 		
 		now += 1000;
-		delay = gcra.admissable(now);
+		delay = gcra.admissible(now);
 		assertEquals(delay, 0);
 		assertTrue(gcra.commit());
 		assertFalse(gcra.isAlarmed());
 		
 		now += 999;
-		delay = gcra.admissable(now);
+		delay = gcra.admissible(now);
 		assertEquals(delay, 1);
 		assertTrue(gcra.rollback());
 		assertFalse(gcra.isAlarmed());
 		
 		now += 1250;
-		delay = gcra.admissable(now);
+		delay = gcra.admissible(now);
 		assertEquals(delay, 0);
 		assertTrue(gcra.commit());
 		assertFalse(gcra.isAlarmed());
 		
 		now += 1000;
-		delay = gcra.admissable(now);
+		delay = gcra.admissible(now);
 		assertEquals(delay, 0);
 		assertTrue(gcra.commit());
 		assertFalse(gcra.isAlarmed());
 		
 		now += 750;
-		delay = gcra.admissable(now);
+		delay = gcra.admissible(now);
 		assertEquals(delay, 0);
 		assertTrue(gcra.commit());
 		assertFalse(gcra.isAlarmed());
 		
 		now += 1000;
-		delay = gcra.admissable(now);
+		delay = gcra.admissible(now);
 		assertEquals(delay, 0);
 		assertTrue(gcra.commit());
 		assertFalse(gcra.isAlarmed());
 		
-		delay = gcra.admissable(now);
+		delay = gcra.admissible(now);
 		assertEquals(delay, 1000);
 		assertFalse(gcra.commit());
 		assertTrue(gcra.isAlarmed());
 		
 		now += 2000;
-		delay = gcra.admissable(now);
+		delay = gcra.admissible(now);
 		assertEquals(delay, 0);
 		assertTrue(gcra.commit());
 		assertFalse(gcra.isAlarmed());
@@ -376,11 +376,11 @@ public class TestGenericCellRateAlgorithm extends TestCase {
 		
 		long then = System.currentTimeMillis();
 		for (int ii = 0; ii < 20; ++ii) {
-			long delay = GenericCellRateAlgorithm.delay2ms(gcra.admissable());
+			long delay = GenericCellRateAlgorithm.delay2ms(gcra.admissible());
 			while (delay > 0) {
 				gcra.rollback();
 				try { Thread.sleep(delay); } catch (Exception ignore) { }
-				delay = GenericCellRateAlgorithm.delay2ms(gcra.admissable());
+				delay = GenericCellRateAlgorithm.delay2ms(gcra.admissible());
 			}
 			gcra.commit();
 			assertFalse(gcra.isAlarmed());
@@ -399,13 +399,13 @@ public class TestGenericCellRateAlgorithm extends TestCase {
 		
 		long then = System.currentTimeMillis();
 		for (int ii = 0; ii < 20; ++ii) {
-			long us = gcra.admissable();
+			long us = gcra.admissible();
 			while (us > 0) {
 				long ms = GenericCellRateAlgorithm.delay2ms1(us);
 				int ns = GenericCellRateAlgorithm.delay2ns2(us);
 				gcra.rollback();
 				try { Thread.sleep(ms, ns); } catch (Exception ignore) { }
-				us = gcra.admissable();
+				us = gcra.admissible();
 			}
 			gcra.commit();
 			assertFalse(gcra.isAlarmed());
