@@ -24,46 +24,161 @@ import junit.framework.TestCase;
 import com.diag.buckaroo.throttle.CellRateThrottle;
 
 public class TestCellRateThrottle extends TestCase {
+	
+	void validateInitialState(Throttle crt) {
+		long ticks = 0;
+		assertNotNull(crt);
+		crt.reset(ticks);
+		assertTrue(crt.isValid());
+		assertNotNull(crt.toString());
+		assertEquals(crt.admissable(ticks), 0);
+		assertFalse(crt.isAlarmed());
+		assertTrue(crt.rollback());
+		assertFalse(crt.isAlarmed());
+		assertEquals(crt.admissable(ticks), 0);
+		assertFalse(crt.isAlarmed());
+		assertTrue(crt.rollback());
+		assertFalse(crt.isAlarmed());
+		assertEquals(crt.admissable(ticks), 0);
+		assertFalse(crt.isAlarmed());
+		crt.reset(ticks);
+		assertFalse(crt.isAlarmed());
+		assertEquals(crt.admissable(ticks), 0);
+		assertTrue(crt.commit());
+		assertFalse(crt.isAlarmed());
+	}
 
-	public void test01() {
+	public void test00Construction() {
 		int[] values = new int[] { Integer.MIN_VALUE, 0, Integer.MAX_VALUE };
+		Throttle crt = new CellRateThrottle();
+		System.out.println("crt=" + crt);
+		validateInitialState(crt);
 		for (int pcr : values) {
-			Throttle crt = new CellRateThrottle(pcr);
+			crt = new CellRateThrottle(pcr);
 			System.out.println("pcr=" + pcr + " crt=" + crt);
+			validateInitialState(crt);
 			for (int cdvt : values)
 			{
 				crt = new CellRateThrottle(pcr, cdvt);
 				System.out.println("pcr=" + pcr + " cdvt=" + cdvt + " crt=" + crt);
+				validateInitialState(crt);
 				for (int scr : values) {
 					for (int mbs : values) {
+						if (cdvt == 0) {
+							crt = new CellRateThrottle(pcr, scr, mbs);
+							System.out.println("pcr=" + pcr + " scr=" + scr + " mbs=" + mbs + " crt=" + crt);
+							validateInitialState(crt);
+						}
 						crt = new CellRateThrottle(pcr, cdvt, scr, mbs);
 						System.out.println("pcr=" + pcr + " cdvt=" + cdvt + " scr=" + scr + " mbs=" + mbs + " crt=" + crt);
+						validateInitialState(crt);
 					}
-				}
-			}
-			for (int scr : values) {
-				for (int mbs : values) {
-					crt = new CellRateThrottle(pcr, scr, mbs);
-					System.out.println("pcr=" + pcr + " scr=" + scr + " mbs=" + mbs + " crt=" + crt);
 				}
 			}
 		}
 	}
 	
-	public void test02() {
+	public void test01Time() {
+		Throttle gcra = new CellRateThrottle();
+		assertNotNull(gcra);
+		long hz = gcra.frequency();
+		assertTrue(hz > 0);
+		long then = 0;
+		for (int ii = 0; ii < 1000; ++ii) {
+			long now = gcra.time();
+			assertTrue(now > then);
+			then = now;
+			assertEquals(gcra.frequency(), hz);
+			try { Thread.sleep(1); } catch (Exception ignore) { }
+		}
+	}
+	
+	public void test02ConstantBitRate() {
 		int pcr = 500;
 		int cdvt = 250;
 		Throttle crt = new CellRateThrottle(pcr, cdvt);
 		System.out.println("pcr=" + pcr + " cdvt=" + cdvt + " crt=" + crt);
+		assertTrue(crt.isValid());
+		validateInitialState(crt);
 	}
 	
-	public void test03() {
+	public void test03VariableBitRate() {
 		int pcr = 500;
 		int cdvt = 250;
 		int scr = 200;
 		int mbs = 10;
 		Throttle crt = new CellRateThrottle(pcr, cdvt, scr, mbs);
 		System.out.println("pcr=" + pcr + " cdvt=" + cdvt + " scr=" + scr + " mbs=" + mbs + " crt=" + crt);
+		assertTrue(crt.isValid());
+		validateInitialState(crt);
+	}
+	public void test04Conversions() {
+		
+		assertEquals(CellRateThrottle.delay2ms(0), 0L);
+		assertEquals(CellRateThrottle.delay2ms(1), 1L);
+		assertEquals(CellRateThrottle.delay2ms(1000), 1L);
+		assertEquals(CellRateThrottle.delay2ms(1001), 2L);
+		assertEquals(CellRateThrottle.delay2ms(1999), 2L);
+		assertEquals(CellRateThrottle.delay2ms(2000), 2L);
+		
+		assertEquals(CellRateThrottle.delay2ms1(0), 0L);
+		assertEquals(CellRateThrottle.delay2ms1(1), 0L);
+		assertEquals(CellRateThrottle.delay2ms1(1000), 1L);
+		assertEquals(CellRateThrottle.delay2ms1(1001), 1L);
+		assertEquals(CellRateThrottle.delay2ms1(1999), 1L);
+		assertEquals(CellRateThrottle.delay2ms1(2000), 2L);
+		
+		assertEquals(CellRateThrottle.delay2ns2(0), 0L);
+		assertEquals(CellRateThrottle.delay2ns2(1), 1000L);
+		assertEquals(CellRateThrottle.delay2ns2(1000), 0L);
+		assertEquals(CellRateThrottle.delay2ns2(1001), 1000L);
+		assertEquals(CellRateThrottle.delay2ns2(1999), 999000L);
+		assertEquals(CellRateThrottle.delay2ns2(2000), 0L);
+		
 	}
 	
+	public void test05Example() {
+		int pcr = 1;
+		Throttle crt = new CellRateThrottle(pcr);
+		System.out.println("crt=" + crt);
+		
+		long then = System.currentTimeMillis();
+		for (int ii = 0; ii < 20; ++ii) {
+			long delay = CellRateThrottle.delay2ms(crt.admissable());
+			while (delay > 0) {
+				crt.rollback();
+				try { Thread.sleep(delay); } catch (Exception ignore) { }
+				delay = CellRateThrottle.delay2ms(crt.admissable());
+			}
+			crt.commit();
+			assertFalse(crt.isAlarmed());
+			long now = System.currentTimeMillis();
+			System.out.println("event=" + ii + " elapsed=" + (now - then) + "ms");
+			then = now;
+		}
+	}
+	
+	public void test06Example() {
+		int pcr = 10;
+		int cdvt = 250;
+		int scr = 1;
+		int mbs = 10;
+		Throttle crt = new CellRateThrottle(pcr, cdvt, scr, mbs);
+		System.out.println("crt=" + crt);
+		
+		long then = System.currentTimeMillis();
+		for (int ii = 0; ii < 20; ++ii) {
+			long delay = CellRateThrottle.delay2ms(crt.admissable());
+			while (delay > 0) {
+				crt.rollback();
+				try { Thread.sleep(delay); } catch (Exception ignore) { }
+				delay = CellRateThrottle.delay2ms(crt.admissable());
+			}
+			crt.commit();
+			assertFalse(crt.isAlarmed());
+			long now = System.currentTimeMillis();
+			System.out.println("event=" + ii + " elapsed=" + (now - then) + "ms");
+			then = now;
+		}
+	}
 }

@@ -25,20 +25,50 @@ import com.diag.buckaroo.throttle.GenericCellRateAlgorithm;
 import com.diag.buckaroo.throttle.Throttle;
 
 public class TestGenericCellRateAlgorithm extends TestCase {
+	
+	void validateInitialState(Throttle gcra) {
+		long ticks = 0;
+		assertNotNull(gcra);
+		gcra.reset(ticks);
+		assertTrue(gcra.isValid());
+		assertNotNull(gcra.toString());
+		assertEquals(gcra.admissable(ticks), 0);
+		assertFalse(gcra.isAlarmed());
+		assertTrue(gcra.rollback());
+		assertFalse(gcra.isAlarmed());
+		assertEquals(gcra.admissable(ticks), 0);
+		assertFalse(gcra.isAlarmed());
+		assertTrue(gcra.rollback());
+		assertFalse(gcra.isAlarmed());
+		assertEquals(gcra.admissable(ticks), 0);
+		assertFalse(gcra.isAlarmed());
+		gcra.reset(ticks);
+		assertFalse(gcra.isAlarmed());
+		assertEquals(gcra.admissable(ticks), 0);
+		assertTrue(gcra.commit());
+		assertFalse(gcra.isAlarmed());
+	}
 
-	public void test00Construction() {
+	public void test00Construction() {	
+		
 		long[] increments = new long[] { Long.MIN_VALUE, 0, Long.MAX_VALUE };
 		long[] limits = new long[] { Long.MIN_VALUE, 0, Long.MAX_VALUE };
+		
+		Throttle gcra = new GenericCellRateAlgorithm();
+		System.out.println("gcra=" + gcra);
+		validateInitialState(gcra);
 		for (long increment : increments) {
+			gcra = new GenericCellRateAlgorithm(increment);
+			System.out.println("i=" + increment + " gcra=" + gcra);
+			validateInitialState(gcra);
 			for (long limit : limits)
 			{
-				Throttle gcra = new GenericCellRateAlgorithm(increment, limit);
-				assertNotNull(gcra);
-				assertTrue(gcra.isValid());
-				assertFalse(gcra.isAlarmed());
-				System.out.println("i=" + increment + " l=" + limit + " gcra=" + gcra + "");
+				gcra = new GenericCellRateAlgorithm(increment, limit);
+				System.out.println("i=" + increment + " l=" + limit + " gcra=" + gcra);
+				validateInitialState(gcra);
 			}
 		}
+		
 	}
 	
 	public void test01Time() {
@@ -49,9 +79,10 @@ public class TestGenericCellRateAlgorithm extends TestCase {
 		long then = 0;
 		for (int ii = 0; ii < 1000; ++ii) {
 			long now = gcra.time();
-			assertTrue(now >= then);
+			assertTrue(now > then);
 			then = now;
 			assertEquals(gcra.frequency(), hz);
+			try { Thread.sleep(1); } catch (Exception ignore) { }
 		}
 	}
 	
@@ -283,46 +314,101 @@ public class TestGenericCellRateAlgorithm extends TestCase {
 
 	}
 	
-	static long us2Ms(long us) { return (us + 1000 - 1) / 1000; }
-	
-	static long ms2Us(long ms) { return ms * 1000; }
-	
-	public void test07RealTimeCareful() {
+	public void test08Conversions() {
 		
-		Throttle gcra = new GenericCellRateAlgorithm(ms2Us(1000), ms2Us(250));
+		assertEquals(GenericCellRateAlgorithm.ms2increment(0), 0L);
+		assertEquals(GenericCellRateAlgorithm.ms2increment(1), 1000L);
+		assertEquals(GenericCellRateAlgorithm.ms2increment(1000), 1000000L);
+		assertEquals(GenericCellRateAlgorithm.ms2increment(1001), 1001000L);
+		assertEquals(GenericCellRateAlgorithm.ms2increment(1999), 1999000L);
+		assertEquals(GenericCellRateAlgorithm.ms2increment(2000), 2000000L);
+		
+		assertEquals(GenericCellRateAlgorithm.ms2limit(0), 0L);
+		assertEquals(GenericCellRateAlgorithm.ms2limit(1), 1000L);
+		assertEquals(GenericCellRateAlgorithm.ms2limit(1000), 1000000L);
+		assertEquals(GenericCellRateAlgorithm.ms2limit(1001), 1001000L);
+		assertEquals(GenericCellRateAlgorithm.ms2limit(1999), 1999000L);
+		assertEquals(GenericCellRateAlgorithm.ms2limit(2000), 2000000L);
+		
+		assertEquals(GenericCellRateAlgorithm.ns2increment(0), 0L);
+		assertEquals(GenericCellRateAlgorithm.ns2increment(1), 1L);
+		assertEquals(GenericCellRateAlgorithm.ns2increment(1000), 1L);
+		assertEquals(GenericCellRateAlgorithm.ns2increment(1001), 2L);
+		assertEquals(GenericCellRateAlgorithm.ns2increment(1999), 2L);
+		assertEquals(GenericCellRateAlgorithm.ns2increment(2000), 2L);
+		
+		assertEquals(GenericCellRateAlgorithm.ns2limit(0), 0L);
+		assertEquals(GenericCellRateAlgorithm.ns2limit(1), 0L);
+		assertEquals(GenericCellRateAlgorithm.ns2limit(1000), 1L);
+		assertEquals(GenericCellRateAlgorithm.ns2limit(1001), 1L);
+		assertEquals(GenericCellRateAlgorithm.ns2limit(1999), 1L);
+		assertEquals(GenericCellRateAlgorithm.ns2limit(2000), 2L);
+
+		assertEquals(GenericCellRateAlgorithm.delay2ms(0), 0L);
+		assertEquals(GenericCellRateAlgorithm.delay2ms(1), 1L);
+		assertEquals(GenericCellRateAlgorithm.delay2ms(1000), 1L);
+		assertEquals(GenericCellRateAlgorithm.delay2ms(1001), 2L);
+		assertEquals(GenericCellRateAlgorithm.delay2ms(1999), 2L);
+		assertEquals(GenericCellRateAlgorithm.delay2ms(2000), 2L);
+		
+		assertEquals(GenericCellRateAlgorithm.delay2ms1(0), 0L);
+		assertEquals(GenericCellRateAlgorithm.delay2ms1(1), 0L);
+		assertEquals(GenericCellRateAlgorithm.delay2ms1(1000), 1L);
+		assertEquals(GenericCellRateAlgorithm.delay2ms1(1001), 1L);
+		assertEquals(GenericCellRateAlgorithm.delay2ms1(1999), 1L);
+		assertEquals(GenericCellRateAlgorithm.delay2ms1(2000), 2L);
+		
+		assertEquals(GenericCellRateAlgorithm.delay2ns2(0), 0L);
+		assertEquals(GenericCellRateAlgorithm.delay2ns2(1), 1000L);
+		assertEquals(GenericCellRateAlgorithm.delay2ns2(1000), 0L);
+		assertEquals(GenericCellRateAlgorithm.delay2ns2(1001), 1000L);
+		assertEquals(GenericCellRateAlgorithm.delay2ns2(1999), 999000L);
+		assertEquals(GenericCellRateAlgorithm.delay2ns2(2000), 0L);
+		
+	}
+	
+	public void test09Example1() {
+		
+		long increment = GenericCellRateAlgorithm.ms2increment(1000);
+		long limit = GenericCellRateAlgorithm.ms2limit(250);
+		Throttle gcra = new GenericCellRateAlgorithm(increment, limit);
 		System.out.println("gcra=" + gcra);
 		
 		long then = System.currentTimeMillis();
 		for (int ii = 0; ii < 20; ++ii) {
-			long delay = us2Ms(gcra.admissable());
+			long delay = GenericCellRateAlgorithm.delay2ms(gcra.admissable());
 			while (delay > 0) {
 				gcra.rollback();
 				try { Thread.sleep(delay); } catch (Exception ignore) { }
-				delay = us2Ms(gcra.admissable());
+				delay = GenericCellRateAlgorithm.delay2ms(gcra.admissable());
 			}
 			gcra.commit();
-			if (gcra.isAlarmed()) { System.err.println("alarm!"); }
+			assertFalse(gcra.isAlarmed());
 			long now = System.currentTimeMillis();
 			System.out.println("event=" + ii + " elapsed=" + (now - then) + "ms");
 			then = now;
 		}
 	}
 	
-	public void test08RealTimeCareless() {
+	public void test10Example2() {
 		
-		Throttle gcra = new GenericCellRateAlgorithm(ms2Us(1000), ms2Us(250));
+		long increment = GenericCellRateAlgorithm.ns2increment(1000000000L);
+		long limit = GenericCellRateAlgorithm.ns2limit(250000000L);
+		Throttle gcra = new GenericCellRateAlgorithm(increment, limit);
 		System.out.println("gcra=" + gcra);
 		
 		long then = System.currentTimeMillis();
 		for (int ii = 0; ii < 20; ++ii) {
-			long delay = us2Ms(gcra.admissable());
-			if (delay > 0) {
+			long us = gcra.admissable();
+			while (us > 0) {
+				long ms = GenericCellRateAlgorithm.delay2ms1(us);
+				int ns = GenericCellRateAlgorithm.delay2ns2(us);
 				gcra.rollback();
-				try { Thread.sleep(delay); } catch (Exception ignore) { }
-				us2Ms(gcra.admissable());
+				try { Thread.sleep(ms, ns); } catch (Exception ignore) { }
+				us = gcra.admissable();
 			}
 			gcra.commit();
-			if (gcra.isAlarmed()) { System.err.println("alarm!"); }
+			assertFalse(gcra.isAlarmed());
 			long now = System.currentTimeMillis();
 			System.out.println("event=" + ii + " elapsed=" + (now - then) + "ms");
 			then = now;
