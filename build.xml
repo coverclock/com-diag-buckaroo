@@ -204,6 +204,6 @@
 	
 	<target name="all" depends="dist, test"/>
 	
-	<target name="complete" depends="dist, report"/>
+	<target name="prerelease" depends="clean, dist, report"/>
 
 </project>
