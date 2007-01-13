@@ -60,8 +60,6 @@ import javax.rmi.ssl.SslRMIServerSocketFactory;
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
  * @version $Revision$
- *
- * @date $Date$
  */
 public class Connector {
 	
@@ -193,7 +191,7 @@ public class Connector {
 	 * to the registry port even if another Connector is already bound to it, effectively hijacking
 	 * the port. If false and the port is already bound, this Connector will fail to start.
 	 * @param jndiRebind is true if rebinding is enabled, false otherwise.
-	 * @return
+	 * @return this object.
 	 */
 	public Connector setJNDIRebind(boolean jndiRebind) {
 		this.jndiRebind = jndiRebind;

@@ -10,6 +10,9 @@ package com.diag.buckaroo.utility;
  * Non-ASCII characters are first encoded as sequences of
  * two or three bytes, using the UTF-8 algorithm, before being
  * encoded as %HH escapes.
+ *
+ * Derived from http://www.w3.org/International/URLUTF8Encoder.java
+ * and http://www.w3.org/International/unescape.java .
  */
 public class UrlUtf8 {
 

@@ -34,9 +34,6 @@ import java.util.zip.ZipEntry;
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
  * @version $Revision$
- *
- * @date $Date$
- *
  */
 public class Discovery {
 	

@@ -48,8 +48,6 @@ import javax.management.ReflectionException;
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
  * @version $Revision$
- *
- * @date $Date$
  */
 public class Counters extends LifeCycle implements DynamicMBean {
 

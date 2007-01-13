@@ -38,6 +38,10 @@ import javax.crypto.spec.PBEKeySpec;
  * outside world, and do so in a way that is verifiable. Note that this is
  * more or less an experiment; if you want something similar but far simpler,
  * try java.util.UUID.randomUUID().toString() instead.
+ *
+ * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
+ *
+ * @version $Revision$
  */
 public class GloballyUniqueIdentifierFactory {
 	static final Logger logger = Logger.getLogger(GloballyUniqueIdentifierFactory.class.getPackage().getName());

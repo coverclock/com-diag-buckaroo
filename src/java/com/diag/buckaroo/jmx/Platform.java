@@ -34,9 +34,6 @@ import com.diag.buckaroo.utility.Heap;
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
  * @version $Revision$
- *
- * @date $Date$
- *
  */
 public class Platform extends LifeCycle implements PlatformMBean {
 	
