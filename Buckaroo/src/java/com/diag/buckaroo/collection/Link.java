@@ -46,8 +46,6 @@ import java.util.NoSuchElementException;
  *
  * @version $Revision$
  *
- * @date $Date$
- *
  * @param <Type> is the type of the payload object to which this type of ChainLink may point.
  */
 public class Link<Type> implements Iterable<Link<Type>> {
@@ -257,9 +255,6 @@ public class Link<Type> implements Iterable<Link<Type>> {
 	 * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
 	 *
 	 * @version $Revision$
-	 *
-	 * @date $Date$
-	 *
 	 */
 	public class LinkIterator implements Iterator<Link<Type>> {
 		

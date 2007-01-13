@@ -43,8 +43,6 @@ package com.diag.buckaroo.throttle;
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
  * @version $Revision$
- *
- * @date $Date$
  */
 public class GenericCellRateAlgorithm implements Throttle {
 	
