@@ -37,8 +37,8 @@ package com.diag.buckaroo.throttle;
  * just one of these throttles, GenericCellRateAlgorithm(PCR,CDVT). A variable bit rate
  * (VBR) traffic contract based on PCR and CDVT plus the Sustainable Cell Rate (SCR) and the
  * Maximum Burst Size (MBS) would use two of these throttles in conjunction, the prior
- * throttle and GenericCellRateAlgorithm(1/SCR,(MBS-1)*((1/PCR)-(1/SCR))) where conforming
- * cells would have to conform to both contracts simultaneously.
+ * throttle and GenericCellRateAlgorithm(1/SCR,CDVT+((MBS-1)*((1/PCR)-(1/SCR)))) where
+ * conforming cells would have to conform to both contracts simultaneously.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
