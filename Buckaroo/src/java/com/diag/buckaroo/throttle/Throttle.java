@@ -143,14 +143,21 @@ public interface Throttle {
 	 * not a power of ten are possible (for example, based on the frequency of
 	 * the CPU clock). Frequencies that are not integers are not possible.
 	 * @return the number of ticks that are in one second or a negative number if
-	 * this throttle is not time based.
+	 * this throttle is not time-based.
 	 */
 	public long frequency();
 	
 	/**
-	 * Return the time of day in ticks since the epoch.
-	 * @return the time of day in ticks since the epoch or a negative number if this
-	 * throttle is not time based.
+	 * Return the elapsed ticks since an epoch. Since the epoch may lie in the
+	 * future, this value may legitimately be negative. It may also be negative due to
+	 * numeric rollover. The value returned is only useful for computing elapsed time
+	 * between calls and may have no relationship to actual wall clock time. In the event
+	 * that the value rolls over and becomes negative, computations for values of elapsed
+	 * ticks less than 2^63 will still be correct. For a tick equal to a nanosecond,
+	 * equivalent to a Throttle frequency of one gigahertz, this yields a maximum elapsed
+	 * time of about 292 years. The value returned by a Throttle which is not time-based
+	 * (the Throttle reports a frequency that is is a negative number) is not defined.
+	 * @return elapsed ticks since an epoch.
 	 */
 	public long time();
 
