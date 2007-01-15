@@ -29,7 +29,7 @@ package com.diag.buckaroo.throttle;
  * throttle when the error clears. Several error messages are emitted initially, then with
  * ever decreasing frequency, then no more. This is a good pattern if the log is being
  * watched in real-time, while at the same time not flooding the log with closely spaced
- * messages. (This class is a port of the misnamed Desperado C++ class ExponentialThrottle.)
+ * messages. This class is a port of the misnamed Desperado C++ class ExponentialThrottle.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *

@@ -25,7 +25,7 @@ package com.diag.buckaroo.throttle;
  * af-tm-0056.000, ATM Forum, April 1996, pp. 62-67 ]. As specified in the standard,
  * ticks are in microseconds. See also "ATM Traffic Management" [ J. L. Sloan,
  * http://www.diag.com/reports/ATMTrafficManagement.html, Digital Aggregates Corp.,
- * August 2005,  ]. Although this throttle is for historical reasons defined in terms
+ * August 2005 ]. Although this throttle is for historical reasons defined in terms
  * of emission units of ATM cells, you can think of cells as any kind of event: packets, log
  * messages, requests, etc. This throttle tries to construct a usable traffic contract even
  * in the face of questionable parameters. This is clearly more of an embedded mindset
@@ -48,7 +48,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 	
 	public final static int US_PER_MS = 1000;
 	public final static int NS_PER_US = 1000;
-	public final static int US_PER_S = 1000000;
+	public final static long US_PER_S = 1000000;
 	
 	/**
 	 * Convert the milliseconds used by the JVM to the microseconds used by the Throttle,
@@ -59,7 +59,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 	public static long ms2increment(long ms) { return ms * US_PER_MS; }
 	
 	/**
-	 * Convert the milliseconds used by the JVM to the microseconds used by the GCRA,
+	 * Convert the milliseconds used by the JVM to the microseconds used by the Throttle,
 	 * appropriate for use as a limit.
 	 * @param ms is milliseconds.
 	 * @return microseconds.
