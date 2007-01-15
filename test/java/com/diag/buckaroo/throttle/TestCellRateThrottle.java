@@ -79,17 +79,17 @@ public class TestCellRateThrottle extends TestCase {
 	}
 	
 	public void test01Time() {
-		Throttle gcra = new CellRateThrottle();
-		assertNotNull(gcra);
-		long hz = gcra.frequency();
-		assertTrue(hz > 0);
-		long then = 0;
+		Throttle crt = new CellRateThrottle();
+		assertNotNull(crt);
+		long hz = crt.frequency();
+		assertEquals(hz, 1000000L);
+		long then = crt.time();
 		for (int ii = 0; ii < 1000; ++ii) {
-			long now = gcra.time();
+			try { Thread.sleep(1); } catch (Exception ignore) { }
+			long now = crt.time();
 			assertTrue(now > then);
 			then = now;
-			assertEquals(gcra.frequency(), hz);
-			try { Thread.sleep(1); } catch (Exception ignore) { }
+			assertEquals(crt.frequency(), hz);
 		}
 	}
 	
