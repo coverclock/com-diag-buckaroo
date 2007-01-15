@@ -48,7 +48,7 @@ public class TestGeometricThrottle extends TestCase {
 		
 		assertTrue(gt.isValid());
 		assertTrue(gt.frequency() < 0);
-		assertTrue(gt.time() < 0);
+		gt.time();
 		
 	}
 	
@@ -87,6 +87,7 @@ public class TestGeometricThrottle extends TestCase {
 	
 	private void cycle(Throttle gt)
 	{
+		long limit = 1073741825;
 		long then = System.currentTimeMillis();
 		long total = 0;
 		long admitted = 0;
@@ -98,11 +99,11 @@ public class TestGeometricThrottle extends TestCase {
 				assertTrue(gt.isValid());
 				assertFalse(gt.isAlarmed());
 				++total;
-				if (total > 0xffffffffL) { break; }
+				if (total >= limit) { break; }
 				else if (gt.admissible() == 0) { gt.commit(); ++admitted; break; }
 				else { gt.rollback(); ++rejected; }
 			}
-			if (total > 0xffffffffL) { break; }
+			if (total >= limit) { break; }
 			assertEquals(rejected2, rejected);
 			if (admitted > 1) { rejected2 = (rejected2 * 2) + 1; }
 			assertEquals(total2, total);
@@ -119,7 +120,6 @@ public class TestGeometricThrottle extends TestCase {
 			);
 		}
 		assertEquals(admitted, 30);
-		System.out.println("complete");
 	}
 
 	public void test03Example() {

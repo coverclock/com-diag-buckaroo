@@ -37,7 +37,7 @@ public class TestOptimisticThrottle extends TestCase {
 		assertNotNull(ot);
 		assertTrue(ot.isValid());
 		assertTrue(ot.frequency() < 0);
-		assertTrue(ot.time() < 0);
+		ot.time();
 	}
 
 	public void test02Admissibility() {

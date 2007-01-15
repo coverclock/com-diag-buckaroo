@@ -75,14 +75,14 @@ public class TestGenericCellRateAlgorithm extends TestCase {
 		Throttle gcra = new GenericCellRateAlgorithm();
 		assertNotNull(gcra);
 		long hz = gcra.frequency();
-		assertTrue(hz > 0);
-		long then = 0;
+		assertEquals(hz, 1000000L);
+		long then = gcra.time();
 		for (int ii = 0; ii < 1000; ++ii) {
+			try { Thread.sleep(1); } catch (Exception ignore) { }
 			long now = gcra.time();
 			assertTrue(now > then);
 			then = now;
 			assertEquals(gcra.frequency(), hz);
-			try { Thread.sleep(1); } catch (Exception ignore) { }
 		}
 	}
 	
