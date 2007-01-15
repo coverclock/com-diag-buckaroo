@@ -400,6 +400,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		
 		for (int ii = 0; ii < count; ++ii) {
 			
+			assertTrue(ba.isValid());
 			ticks = ba.admissible(now);
 			assertTrue(ticks >= 0);
 			if (ticks < minticks) { minticks = ticks; }
@@ -428,6 +429,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		}
 		
 		// Account for the final delay to get the bandwidth calculation to be correct.
+		assertTrue(ba.isValid());
 		ticks = ba.admissible(now);
 		assertTrue(ticks >= 0);
 		if (ticks < minticks) { minticks = ticks; }
