@@ -46,13 +46,17 @@ package com.diag.buckaroo.throttle;
  */
 public class GenericCellRateAlgorithm implements Throttle {
 	
+	public final static int US_PER_MS = 1000;
+	public final static int NS_PER_US = 1000;
+	public final static int US_PER_S = 1000000;
+	
 	/**
 	 * Convert the milliseconds used by the JVM to the microseconds used by the Throttle,
 	 * appropriate for use as an increment.
 	 * @param ms is milliseconds.
 	 * @return microseconds.
 	 */
-	public static long ms2increment(long ms) { return ms * 1000; }
+	public static long ms2increment(long ms) { return ms * US_PER_MS; }
 	
 	/**
 	 * Convert the milliseconds used by the JVM to the microseconds used by the GCRA,
@@ -60,7 +64,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 * @param ms is milliseconds.
 	 * @return microseconds.
 	 */
-	public static long ms2limit(long ms) { return ms * 1000; }
+	public static long ms2limit(long ms) { return ms * US_PER_MS; }
 	
 	/**
 	 * Convert the nanoseconds used by the JVM to the microseconds used by the Throttle,
@@ -68,7 +72,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 * @param ns is nanoseconds.
 	 * @return microseconds.
 	 */
-	public static long ns2increment(long ns) { return (ns + 1000 - 1) / 1000; }
+	public static long ns2increment(long ns) { return (ns + NS_PER_US - 1) / NS_PER_US; }
 	
 	/**
 	 * Convert the nanoseconds used by the JVM to the microseconds used by the Throttle,
@@ -76,7 +80,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 * @param ns is nanoseconds.
 	 * @return microseconds.
 	 */
-	public static long ns2limit(long ns) { return ns  / 1000; }
+	public static long ns2limit(long ns) { return ns  / NS_PER_US; }
 	
 	/**
 	 * Convert the microseconds used by the Throttle to the milliseconds used by the JVM,
@@ -85,7 +89,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 * @param us is microseconds.
 	 * @return milliseconds.
 	 */
-	public static long delay2ms(long us) { return (us + 1000 - 1) / 1000; }
+	public static long delay2ms(long us) { return (us + US_PER_MS - 1) / US_PER_MS; }
 	
 	/**
 	 * Convert the microseconds used by the Throttle to the milliseconds used by the JVM,
@@ -94,7 +98,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 * @param us is microseconds.
 	 * @return milliseconds.
 	 */
-	public static long delay2ms1(long us) { return us / 1000; }
+	public static long delay2ms1(long us) { return us / US_PER_MS; }
 	
 	/**
 	 * Convert the microseconds used by the Throttle to the nanoseconds used by the JVM,
@@ -103,7 +107,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 * @param us is microseconds.
 	 * @return nanoseconds.
 	 */
-	public static int delay2ns2(long us) { return ((int)(us % 1000)) * 1000; }
+	public static int delay2ns2(long us) { return ((int)(us % US_PER_MS)) * NS_PER_US; }
 
 	long now;			// time of the most recent attempted emission in usec since the epoch
 	long then;			// time of the most recent committed emission in usec since the epoch
@@ -223,14 +227,14 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 * @see com.diag.buckaroo.throttle.Throttle#frequency()
 	 */
 	public long frequency() {
-		return 1000000;
+		return US_PER_S;
 	}
 
 	/* (non-Javadoc)
 	 * @see com.diag.buckaroo.throttle.Throttle#time()
 	 */
 	public long time() {
-		return System.nanoTime() / 1000;
+		return System.nanoTime() / NS_PER_US;
 	}
 
 	/* (non-Javadoc)
@@ -245,7 +249,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 			+ ",x=" + x
 			+ ",x1=" + x1
 			+ ",alarmed=" + alarmed
-			+ ",alarmed2=" + alarmed1
+			+ ",alarmed1=" + alarmed1
 			+ "}";
 	}
 }
