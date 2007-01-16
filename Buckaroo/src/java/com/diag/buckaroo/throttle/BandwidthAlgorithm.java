@@ -109,10 +109,10 @@ public class BandwidthAlgorithm extends GenericCellRateAlgorithm implements Mani
 	public static long delay2ms1(long ns) { return ns / NS_PER_MS; }
 	
 	/**
-	 * Convert the nanoseconds used by the Throttle to the nanoseconds used by the JVM,
+	 * Convert the ticks used by the Throttle to the nanoseconds used by the JVM,
 	 * extract just the fractional number of nanoseconds less than a millisecond,
 	 * appropriate for the second parameter of Thread.sleep(milliseconds,nanoseconds).
-	 * @param us is microseconds.
+	 * @param ns is ticks.
 	 * @return nanoseconds.
 	 */
 	public static int delay2ns2(long ns) { return (int)(ns % NS_PER_MS); }
