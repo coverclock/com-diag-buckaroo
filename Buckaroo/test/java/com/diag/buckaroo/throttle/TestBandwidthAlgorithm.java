@@ -23,11 +23,11 @@ import java.lang.Long;
 import java.util.Random;
 import junit.framework.TestCase;
 import com.diag.buckaroo.throttle.BandwidthAlgorithm;
-import com.diag.buckaroo.throttle.Throttle;
+import com.diag.buckaroo.throttle.ManifoldThrottle;
 
 public class TestBandwidthAlgorithm extends TestCase {
 	
-	void validateInitialState(Throttle ba) {
+	void validateInitialState(ManifoldThrottle ba) {
 		long ticks = 0;
 		assertNotNull(ba);
 		ba.reset(ticks);
@@ -46,7 +46,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		ba.reset(ticks);
 		assertFalse(ba.isAlarmed());
 		assertEquals(ba.admissible(ticks), 0);
-		assertTrue(ba.commit());
+		assertTrue(ba.commit(1));
 		assertFalse(ba.isAlarmed());
 	}
 
@@ -55,7 +55,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		long[] increments = new long[] { Long.MIN_VALUE, 0, Long.MAX_VALUE };
 		long[] limits = new long[] { Long.MIN_VALUE, 0, Long.MAX_VALUE };
 		
-		Throttle ba = new BandwidthAlgorithm();
+		ManifoldThrottle ba = new BandwidthAlgorithm();
 		System.out.println("ba=" + ba);
 		validateInitialState(ba);
 		for (long increment : increments) {
@@ -73,7 +73,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 	}
 	
 	public void test01Time() {
-		Throttle ba = new BandwidthAlgorithm();
+		ManifoldThrottle ba = new BandwidthAlgorithm();
 		assertNotNull(ba);
 		long hz = ba.frequency();
 		assertEquals(hz, 1000000000L);
@@ -93,7 +93,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		long increment = 1000;
 		long limit = 250;
 		
-		Throttle ba = new BandwidthAlgorithm(increment, limit);
+		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
 		assertNotNull(ba);
 		assertTrue(ba.isValid());
 		assertNotNull(ba.toString());
@@ -122,7 +122,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		
 	public void test04Reset() {
 		
-		Throttle ba = new BandwidthAlgorithm(1, 0);
+		ManifoldThrottle ba = new BandwidthAlgorithm(1, 0);
 		assertNotNull(ba);
 		assertTrue(ba.isValid());
 		
@@ -148,7 +148,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 	
 	public void test05Increment() {
 		
-		Throttle ba = new BandwidthAlgorithm(1, 0);
+		ManifoldThrottle ba = new BandwidthAlgorithm(1, 0);
 		assertNotNull(ba);
 		assertTrue(ba.isValid());
 		
@@ -158,7 +158,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		assertFalse(ba.isAlarmed());
 		
 		assertEquals(ba.admissible(now), 0);
-		assertTrue(ba.commit());
+		assertTrue(ba.commit(1));
 		assertFalse(ba.isAlarmed());
 		
 		long delay = ba.admissible(now);
@@ -171,7 +171,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 			now += delay;
 			delay = ba.admissible(now);
 			assertEquals(delay, 0);
-			assertTrue(ba.commit());
+			assertTrue(ba.commit(1));
 			assertFalse(ba.isAlarmed());
 			
 			delay = ba.admissible(now);
@@ -184,7 +184,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 	
 	public void test06Increment() {
 		
-		Throttle ba = new BandwidthAlgorithm(1000, 0);
+		ManifoldThrottle ba = new BandwidthAlgorithm(1000, 0);
 		assertNotNull(ba);
 		assertTrue(ba.isValid());
 		
@@ -194,7 +194,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		assertFalse(ba.isAlarmed());
 		
 		assertEquals(ba.admissible(now), 0);
-		assertTrue(ba.commit());
+		assertTrue(ba.commit(1));
 		assertFalse(ba.isAlarmed());
 		
 		long delay = ba.admissible(now);
@@ -207,7 +207,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 			now += delay;
 			delay = ba.admissible(now);
 			assertEquals(delay, 0);
-			assertTrue(ba.commit());
+			assertTrue(ba.commit(1));
 			assertFalse(ba.isAlarmed());
 			
 			delay = ba.admissible(now);
@@ -220,7 +220,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 	
 	public void test07Limit() {
 		
-		Throttle ba = new BandwidthAlgorithm(1000, 250);
+		ManifoldThrottle ba = new BandwidthAlgorithm(1000, 250);
 		assertNotNull(ba);
 		assertTrue(ba.isValid());
 		
@@ -230,7 +230,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		assertFalse(ba.isAlarmed());
 		
 		assertEquals(ba.admissible(now), 0);
-		assertTrue(ba.commit());
+		assertTrue(ba.commit(1));
 		assertFalse(ba.isAlarmed());
 		
 		long delay = ba.admissible(now);
@@ -241,13 +241,13 @@ public class TestBandwidthAlgorithm extends TestCase {
 		now += 900;
 		delay = ba.admissible(now);
 		assertEquals(delay, 0);
-		assertTrue(ba.commit());
+		assertTrue(ba.commit(1));
 		assertFalse(ba.isAlarmed());
 		
 		now += 900;
 		delay = ba.admissible(now);
 		assertEquals(delay, 0);
-		assertTrue(ba.commit());
+		assertTrue(ba.commit(1));
 		assertFalse(ba.isAlarmed());
 		
 		now += 900;
@@ -259,7 +259,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		now += 50;
 		delay = ba.admissible(now);
 		assertEquals(delay, 0);
-		assertTrue(ba.commit());
+		assertTrue(ba.commit(1));
 		assertFalse(ba.isAlarmed());
 		
 		delay = ba.admissible(now);
@@ -270,7 +270,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		now += 1000;
 		delay = ba.admissible(now);
 		assertEquals(delay, 0);
-		assertTrue(ba.commit());
+		assertTrue(ba.commit(1));
 		assertFalse(ba.isAlarmed());
 		
 		now += 999;
@@ -282,36 +282,36 @@ public class TestBandwidthAlgorithm extends TestCase {
 		now += 1250;
 		delay = ba.admissible(now);
 		assertEquals(delay, 0);
-		assertTrue(ba.commit());
+		assertTrue(ba.commit(1));
 		assertFalse(ba.isAlarmed());
 		
 		now += 1000;
 		delay = ba.admissible(now);
 		assertEquals(delay, 0);
-		assertTrue(ba.commit());
+		assertTrue(ba.commit(1));
 		assertFalse(ba.isAlarmed());
 		
 		now += 750;
 		delay = ba.admissible(now);
 		assertEquals(delay, 0);
-		assertTrue(ba.commit());
+		assertTrue(ba.commit(1));
 		assertFalse(ba.isAlarmed());
 		
 		now += 1000;
 		delay = ba.admissible(now);
 		assertEquals(delay, 0);
-		assertTrue(ba.commit());
+		assertTrue(ba.commit(1));
 		assertFalse(ba.isAlarmed());
 		
 		delay = ba.admissible(now);
 		assertEquals(delay, 1000);
-		assertFalse(ba.commit());
+		assertFalse(ba.commit(1));
 		assertTrue(ba.isAlarmed());
 		
 		now += 2000;
 		delay = ba.admissible(now);
 		assertEquals(delay, 0);
-		assertTrue(ba.commit());
+		assertTrue(ba.commit(1));
 		assertFalse(ba.isAlarmed());
 
 	}
@@ -374,7 +374,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		long bps = 1024;
 		long increment = (1000000000L + bps - 1) / bps;
 		long limit = 0;
-		BandwidthAlgorithm ba = new BandwidthAlgorithm(increment, limit);
+		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
 		long now = 0;
 		// Because the Throttle was constructed using the actual time, not simulated time.
 		ba.reset(now);
@@ -463,7 +463,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		
 		long increment = BandwidthAlgorithm.ms2increment(1000);
 		long limit = BandwidthAlgorithm.ms2limit(250);
-		Throttle ba = new BandwidthAlgorithm(increment, limit);
+		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
 		System.out.println("ba=" + ba);
 		
 		long then = System.currentTimeMillis();
@@ -486,7 +486,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		
 		long increment = BandwidthAlgorithm.ns2increment(1000000000L);
 		long limit = BandwidthAlgorithm.ns2limit(250000000L);
-		Throttle ba = new BandwidthAlgorithm(increment, limit);
+		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
 		System.out.println("ba=" + ba);
 		
 		long then = System.currentTimeMillis();
