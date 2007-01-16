@@ -369,34 +369,24 @@ public class TestBandwidthAlgorithm extends TestCase {
 		
 	}
 	
-	public void test09Example1() {
+	static double exercise(ManifoldThrottle ba, int bps, int maximum, int count) {
 		
-		long bps = 1024;
-		long increment = (1000000000L + bps - 1) / bps;
-		long limit = 0;
-		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
 		long now = 0;
 		// Because the Throttle was constructed using the actual time, not simulated time.
 		ba.reset(now);
-		System.out.println("ba=" + ba);
+		System.out.println("bps=" + bps + " ba=" + ba);
 		
 		Random random = new Random();
 		
 		int octets;
 		int minoctets = Integer.MAX_VALUE;
 		int maxoctets = Integer.MIN_VALUE;
-		// Beware making totoctets float or double because of floating-point round-off errors.
 		long totoctets = 0;
 		
 		long ticks;
 		long minticks = Long.MAX_VALUE;
 		long maxticks = Long.MIN_VALUE;
-		// Beware making totticks float or double because of floating-point round-off errors.
 		long totticks = 0;
-		
-		final int maxsize = 1024 * 1024;
-		// Beware making count much larger or else totticks will overflow.
-		final int count = 10 * 1000 * 1000;
 		
 		for (int ii = 0; ii < count; ++ii) {
 			
@@ -405,8 +395,11 @@ public class TestBandwidthAlgorithm extends TestCase {
 			assertTrue(ticks >= 0);
 			if (ticks < minticks) { minticks = ticks; }
 			if (ticks > maxticks) { maxticks = ticks; }
+			if ((totticks + ticks) < 0) {
+				System.err.println("overflow totticks=" + totticks + " ticks=" + ticks + " ii=" + ii);
+			}
 			totticks += ticks;
-			assertTrue(totticks >= 0);
+			assertTrue("totticks=" + totticks, totticks >= 0);
 			
 			if (ticks > 0) {
 				ba.rollback();
@@ -417,11 +410,14 @@ public class TestBandwidthAlgorithm extends TestCase {
 			}
 			
 			float fraction = random.nextFloat();
-			octets = (int)(maxsize * fraction);
+			octets = (int)(maximum * fraction);
 			if (octets < minoctets) { minoctets = octets; }
 			if (octets > maxoctets) { maxoctets = octets; }
+			if ((totoctets + octets) < 0) {
+				System.err.println("overflow totoctets=" + totoctets + " octets=" + octets + " ii=" + ii);
+			}
 			totoctets += octets;
-			assertTrue(totoctets >= 0);
+			assertTrue("totoctets=" + totoctets, totoctets >= 0);
 			
 			ba.commit(octets);
 			assertFalse(ba.isAlarmed());
@@ -435,31 +431,93 @@ public class TestBandwidthAlgorithm extends TestCase {
 		if (ticks < minticks) { minticks = ticks; }
 		if (ticks > maxticks) { maxticks = ticks; }
 		totticks += ticks;
-		assertTrue(totticks >= 0);
+		assertTrue("totticks=" + totticks, totticks >= 0);
 		
-		float meanoctets = totoctets;
+		double meanoctets = totoctets;
 		meanoctets /= count;
-		float mindelay = minticks;
-		mindelay /= 1000000000;
-		float meandelay = totticks;
-		meandelay /= 1000000000;
-		meandelay /= count;
-		float maxdelay = maxticks;
-		maxdelay /= 1000000000;
-		float bandwidth = totoctets;
-		bandwidth /= totticks;
+		double meanticks = totticks;
+		meanticks /= count;
+		double bandwidth = totoctets;
 		bandwidth *= 1000000000;
+		bandwidth /= totticks;
 		System.out.println(
-				"sent=" + count + "packets"
-				+ " size=" + minoctets + "<=" + meanoctets + "<=" + maxoctets + "octets"
-				+ " delay=" + mindelay + "<=" + meandelay + "<=" + maxdelay + "seconds"
-				+ " expected=" + (float)bps + "bytes/second"
-				+ " actual=" + bandwidth + "bytes/second"
+				  "elapsed=" + totticks + "ticks "
+				+ "sent=" + count + "packets=" + totoctets + "octets "
+				+ "size=" + minoctets + "<=" + meanoctets + "<=" + maxoctets + "octets "
+				+ "delay=" + minticks + "<=" + meanticks + "<=" + maxticks + "ticks "
+				+ "expected=" + bps + "bytes/second "
+				+ "actual=" + bandwidth + "bytes/second "
 		);
-		assertTrue(Math.ceil(bandwidth) == (float)bps);
+		
+		return bandwidth;
 	}
 	
-	public void test10Example2() {
+	public void test10Exercise() {
+		final int bps = 1;
+		final int maximum = 1024 * 1024;
+		final int count = 10 * 1000; // Much larger and totticks overflows.
+		final long increment = (1000000000L + bps - 1) / bps;
+		final long limit = 0;
+		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
+		double bandwidth = exercise(ba, bps, maximum, count);
+		double accuracy = (Math.abs((double)bps - bandwidth) / (double)bps) * 100;
+		System.out.println("accuracy=" + accuracy);
+		assertTrue("accuracy=" + accuracy, accuracy < 0.1);
+	}
+	
+	public void test11Exercise() {
+		final int bps = 10;
+		final int maximum = 1024 * 1024;
+		final int count = 100 * 1000; // Much larger and totticks overflows.
+		final long increment = (1000000000L + bps - 1) / bps;
+		final long limit = 0;
+		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
+		double bandwidth = exercise(ba, bps, maximum, count);
+		double accuracy = (Math.abs((double)bps - bandwidth) / (double)bps) * 100;
+		System.out.println("accuracy=" + accuracy);
+		assertTrue("accuracy=" + accuracy, accuracy < 0.1);
+	}
+	
+	public void test12Exercise() {
+		final int bps = 1024;
+		final int maximum = 1024 * 1024;
+		final int count = 10 * 1000 * 1000; // Much larger and totticks overflows.
+		final long increment = (1000000000L + bps - 1) / bps;
+		final long limit = 0;
+		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
+		double bandwidth = exercise(ba, bps, maximum, count);
+		double accuracy = (Math.abs((double)bps - bandwidth) / (double)bps) * 100;
+		System.out.println("accuracy=" + accuracy);
+		assertTrue("accuracy=" + accuracy, accuracy < 0.1);
+	}
+	
+	public void test13Exercise() {
+		final int bps = 102400;
+		final int maximum = 1024 * 1024;
+		final int count = 10 * 1000 * 1000;
+		final long increment = (1000000000L + bps - 1) / bps;
+		final long limit = 250000;
+		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
+		double bandwidth = exercise(ba, bps, maximum, count);
+		double accuracy = (Math.abs((double)bps - bandwidth) / (double)bps) * 100;
+		System.out.println("accuracy=" + accuracy);
+		assertTrue("accuracy=" + accuracy, accuracy < 0.1);
+	}
+	
+	public void test14Exercise() {
+		final int bps = 1000000000; // This is the limit for accurate throttling at 1GHz.
+		final int maximum = 1024 * 1024;
+		final int count = 10 * 1000 * 1000;
+		final long increment = (1000000000L + bps - 1) / bps;
+		final long limit = 250000;
+		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
+		double bandwidth = exercise(ba, bps, maximum, count);
+		double accuracy = (Math.abs((double)bps - bandwidth) / (double)bps) * 100;
+		System.out.println("accuracy=" + accuracy);
+		assertTrue("accuracy=" + accuracy, accuracy < 0.1);
+	}
+	
+	public void test15Example1() {
 		
 		long increment = BandwidthAlgorithm.ms2increment(1000);
 		long limit = BandwidthAlgorithm.ms2limit(250);
@@ -482,7 +540,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		}
 	}
 	
-	public void test11Example3() {
+	public void test16Example2() {
 		
 		long increment = BandwidthAlgorithm.ns2increment(1000000000L);
 		long limit = BandwidthAlgorithm.ns2limit(250000000L);

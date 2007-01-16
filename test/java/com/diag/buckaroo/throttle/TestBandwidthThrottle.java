@@ -20,11 +20,11 @@
 package com.diag.buckaroo.throttle;
 
 import java.lang.Integer;
-import java.util.Random;
 
 import junit.framework.TestCase;
 import com.diag.buckaroo.throttle.BandwidthThrottle;
 import com.diag.buckaroo.throttle.ManifoldThrottle;
+import com.diag.buckaroo.throttle.TestBandwidthAlgorithm;
 
 public class TestBandwidthThrottle extends TestCase {
 	
@@ -139,109 +139,102 @@ public class TestBandwidthThrottle extends TestCase {
 		assertEquals(BandwidthThrottle.delay2ns2(2000000), 0L);
 		
 	}
+
+	public void test05Exercise() {
+		final int pbr = 1024;
+		final int bps = 1024;
+		final int maximum = 1024 * 1024;
+		final int count = 10 * 1000 * 1000;
+		final double bandwidth = TestBandwidthAlgorithm.exercise(new BandwidthThrottle(pbr), bps, maximum, count);
+		final double accuracy = (Math.abs((double)pbr - bandwidth) / (double)pbr) * 100;
+		System.out.println("accuracy=" + accuracy);
+		assertTrue("accuracy=" + accuracy, accuracy < 0.1);
+	}
 	
-	private float exercise(ManifoldThrottle bt, int bps) {
-		
-		long now = 0;
-		// Because the Throttle was constructed using the actual time, not simulated time.
-		bt.reset(now);
+	public void test06Exercise() {
+		final int pbr = 10240;
+		final int sbr = 1024;
+		final int mbs = 10240;
+		final int bps = 1024;
+		final int maximum = 1024 * 1024;
+		final int count = 10 * 1000 * 1000;
+		final double bandwidth = TestBandwidthAlgorithm.exercise(new BandwidthThrottle(pbr, sbr, mbs), bps, maximum, count);
+		final double accuracy = (Math.abs((double)bps - bandwidth) / (double)bps) * 100;
+		System.out.println("accuracy=" + accuracy);
+		assertTrue("accuracy=" + accuracy, accuracy < 0.1);
+	}
+	
+	public void test07Exercise() {
+		final int pbr = 1024;
+		final int jt = 250000;
+		final int bps = 1024;
+		final int maximum = 1024 * 1024;
+		final int count = 10 * 1000 * 1000;
+		final double bandwidth = TestBandwidthAlgorithm.exercise(new BandwidthThrottle(pbr, jt), bps, maximum, count);
+		final double accuracy = (Math.abs((double)bps - bandwidth) / (double)bps) * 100;
+		System.out.println("accuracy=" + accuracy);
+		assertTrue("accuracy=" + accuracy, accuracy < 0.1);
+	}
+	
+	public void test08Exercise() {
+		final int pbr = 10240;
+		final int jt = 250000;
+		final int sbr = 1024;
+		final int mbs = 10240;
+		final int bps = 1024;
+		final int maximum = 1024 * 1024;
+		final int count = 10 * 1000 * 1000;
+		final double bandwidth = TestBandwidthAlgorithm.exercise(new BandwidthThrottle(pbr, jt, sbr, mbs), bps, maximum, count);
+		final double accuracy = (Math.abs((double)bps - bandwidth) / (double)bps) * 100;
+		System.out.println("accuracy=" + accuracy);
+		assertTrue("accuracy=" + accuracy, accuracy < 0.1);
+	}
+	
+	public void test09Example1() {
+		final int pbr = 1;
+		ManifoldThrottle bt = new BandwidthThrottle(pbr);
 		System.out.println("bt=" + bt);
 		
-		Random random = new Random();
-		
-		int octets;
-		int minoctets = Integer.MAX_VALUE;
-		int maxoctets = Integer.MIN_VALUE;
-		// Beware making totoctets float or double because of floating-point round-off errors.
-		long totoctets = 0;
-		
-		long ticks;
-		long minticks = Long.MAX_VALUE;
-		long maxticks = Long.MIN_VALUE;
-		// Beware making totticks float or double because of floating-point round-off errors.
-		long totticks = 0;
-		
-		final int maxsize = 1024 * 1024;
-		// Beware making count much larger or else totticks will overflow.
-		final int count = 10 * 1000 * 1000;
-		
-		for (int ii = 0; ii < count; ++ii) {
-			
-			assertTrue(bt.isValid());
-			ticks = bt.admissible(now);
-			assertTrue(ticks >= 0);
-			if (ticks < minticks) { minticks = ticks; }
-			if (ticks > maxticks) { maxticks = ticks; }
-			totticks += ticks;
-			assertTrue(totticks >= 0);
-			
-			if (ticks > 0) {
+		long then = System.currentTimeMillis();
+		for (int ii = 0; ii < 20; ++ii) {
+			long ms = BandwidthThrottle.delay2ms(bt.admissible());
+			while (ms > 0) {
 				bt.rollback();
-				now += ticks;
-				ticks = bt.admissible(now);
-				// There is no scheduling non-determinism using simulated time.
-				assertEquals(ticks, 0);
+				try { Thread.sleep(ms); } catch (Exception ignore) { }
+				ms = BandwidthThrottle.delay2ms(bt.admissible());
 			}
-			
-			float fraction = random.nextFloat();
-			octets = (int)(maxsize * fraction);
-			if (octets < minoctets) { minoctets = octets; }
-			if (octets > maxoctets) { maxoctets = octets; }
-			totoctets += octets;
-			assertTrue(totoctets >= 0);
-			
-			bt.commit(octets);
+			bt.commit(1);
 			assertFalse(bt.isAlarmed());
-			
+			long now = System.currentTimeMillis();
+			System.out.println("event=" + ii + " elapsed=" + (now - then) + "ms");
+			then = now;
 		}
+	}
+	
+	public void test10Example2() {
+		final int pbr = 10;
+		final int jt = 250000;
+		final int sbr = 1;
+		final int mbs = 10;
+		ManifoldThrottle bt = new BandwidthThrottle(pbr, jt, sbr, mbs);
+		System.out.println("bt=" + bt);
 		
-		// Account for the final delay to get the bandwidth calculation to be correct.
-		assertTrue(bt.isValid());
-		ticks = bt.admissible(now);
-		assertTrue(ticks >= 0);
-		if (ticks < minticks) { minticks = ticks; }
-		if (ticks > maxticks) { maxticks = ticks; }
-		totticks += ticks;
-		assertTrue(totticks >= 0);
-		
-		float meanoctets = totoctets;
-		meanoctets /= count;
-		float mindelay = minticks;
-		mindelay /= 1000000000;
-		float meandelay = totticks;
-		meandelay /= 1000000000;
-		meandelay /= count;
-		float maxdelay = maxticks;
-		maxdelay /= 1000000000;
-		float bandwidth = totoctets;
-		bandwidth /= totticks;
-		bandwidth *= 1000000000;
-		System.out.println(
-				"sent=" + count + "packets"
-				+ " size=" + minoctets + "<=" + meanoctets + "<=" + maxoctets + "octets"
-				+ " delay=" + mindelay + "<=" + meandelay + "<=" + maxdelay + "seconds"
-				+ " expected=" + (float)bps + "bytes/second"
-				+ " actual=" + bandwidth + "bytes/second"
-		);
-		assertTrue(Math.ceil(bandwidth) == (float)bps);
-		
-		return  bandwidth;
-	}
-	
-	public void test05Example() {
-		exercise(new BandwidthThrottle(1024), 1024);
-	}
-	
-	public void test06Example() {
-		exercise(new BandwidthThrottle(10240, 1024, 10240), 1024);
-	}
-	
-	public void test07Example() {
-		exercise(new BandwidthThrottle(1024, 250000), 1024);
-	}
-	
-	public void test08Example() {
-		exercise(new BandwidthThrottle(10240, 250000, 1024, 10240), 1024);
+		long then = System.nanoTime();
+		for (int ii = 0; ii < 20; ++ii) {
+			long ticks = bt.admissible();
+			while (ticks > 0) {
+				bt.rollback();
+				long ms = BandwidthThrottle.delay2ms1(ticks);
+				int ns = BandwidthThrottle.delay2ns2(ticks);
+				try { Thread.sleep(ms, ns); } catch (Exception ignore) { }
+				ticks = bt.admissible();
+			}
+			bt.commit(1);
+			assertFalse(bt.isAlarmed());
+			long now = System.nanoTime();
+			System.out.println("event=" + ii + " elapsed=" + (now - then) + "ns");
+			then = now;
+		}
 	}
 
 }
