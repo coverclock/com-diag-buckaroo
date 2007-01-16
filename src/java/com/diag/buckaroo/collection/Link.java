@@ -201,8 +201,6 @@ public class Link<Type> implements Iterable<Link<Type>> {
 	 *
 	 * @version $Revision$
 	 *
-	 * @date $Date$
-	 *
 	 * @param <Type> is the type of the payload object that Links of this type contain.
 	 */
 	public interface Functor<Type> {

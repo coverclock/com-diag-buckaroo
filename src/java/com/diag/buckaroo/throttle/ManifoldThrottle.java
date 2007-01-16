@@ -36,7 +36,7 @@ public interface ManifoldThrottle extends Throttle {
 	 * method. This method must be called if the event was emitted regardless of whether
 	 * or not it was admissible. Committing an event which is not admissible alarms the
 	 * throttle. The alarm may clear if later event emissions conform to its traffic contract.
-	 * @oaram count is a count of events that will be emitted by the caller.
+	 * @param count is a count of events that will be emitted by the caller.
 	 * @return true if the throttle is not currently alarmed, false otherwise.
 	 */
 	public boolean commit(int count);
