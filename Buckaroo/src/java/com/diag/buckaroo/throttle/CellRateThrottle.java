@@ -21,13 +21,12 @@ package com.diag.buckaroo.throttle;
 
 import java.lang.Long;
 
+import com.diag.buckaroo.throttle.CompoundThrottle;
 import com.diag.buckaroo.throttle.GenericCellRateAlgorithm;
-import com.diag.buckaroo.throttle.OptimisticThrottle;
-import com.diag.buckaroo.throttle.Throttle;
 
 /**
- * This class mplements a cell rate throttle using two Generic Cell Rate Algorithms to
- * support either a constant bit rate (CBR) or a variable bit rate (VBR) traffic contract.
+ * This class implements a Cell Rate Throttle using one or two Generic Cell Rate Algorithms
+ * to support either a constant bit rate (CBR) or a variable bit rate (VBR) traffic contract.
  * As per "Traffic Management Specification 4.0" specification [ Giroux, N., et al.,
  * af-tm-0056.000, ATM Forum, April 1996 ] all time durations are in microseconds.
  * Although this throttle is for historical reasons defined in terms of emission
@@ -35,65 +34,59 @@ import com.diag.buckaroo.throttle.Throttle;
  * messages, requests, etc. This throttle tries to construct a usable traffic contract
  * even in the face of questionable parameters. This is clearly more of an embedded
  * mindset than an enterprise mind set in which the constructor would just throw an
- * exception. The parameters of the traffic contract are the Increment (the interarrival
- * time in ticks between conforming cells) and the Limit (the total time in ticks that a cell
- * stream may deviate from conformance). A constant bit rate (CBR) traffic contract based just
- * on the Peak Cell Rate (PCR) and the Cell Delay Variation Tolerance (CDVT) would use just
- * one of GCRA, GenericCellRateAlgorithm(PCR,CDVT) where CDVT may default to zero. A
- * variable bit rate (VBR) traffic contract based on PCR and CDVT plus the Sustainable Cell
- * Rate (SCR) and the Maximum Burst Size (MBS) would use two of GCRAS in conjunction, the
- * prior GCRA and GenericCellRateAlgorithm(1/SCR,(MBS-1)*((1/PCR)-(1/SCR))) where conforming
- * cells would have to conform to both contracts simultaneously and where again CDVT may
- * default to zero. Cell streams conforming to a CBR contract must meet the PCR with CDVT
- * limited the maximum total jitter in the cell stream. Cell streams conforming to a VBR
- * contract must meet the SCR in the long run but may burst as many as MBS cells at PCR
- * with the specified CDVT. This class is a port not of the Desperado C++ class
- * CellRateThrottle but rather its class CompoundCellRateThrottle.
+ * exception. A CBR traffic contract based just on the Peak Cell Rate (PCR) and the Cell
+ * Delay Variation Tolerance (CDVT) would use just one GCRA, GenericCellRateAlgorithm(1/PCR,
+ * CDVT), where CDVT may default to zero. A VBR traffic contract based on PCR and CDVT plus
+ * the Sustained Cell Rate (SCR) and the Maximum Burst Size (MBS) would use two of GCRAs
+ * in conjunction, the prior GCRA, plus GenericCellRateAlgorithm(1/SCR,
+ * CDVT+(MBS-1)*((1/SCR)-(1/PCR))), where conforming cells would have to meet both contracts
+ * simultaneously, and where again CDVT may default to zero. Cell streams conforming to a
+ * CBR contract must meet the PCR with CDVT limiting the maximum total jitter in the cell
+ * stream. Cell streams conforming to a VBR contract must meet the SCR in the long run but
+ * may burst as many as MBS cells at PCR with the specified CDVT. This class is a port not
+ * of the Desperado C++ class CellRateThrottle but rather is more similar to the class
+ * CompoundCellRateThrottle.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
  * @version $Revision$
  */
-public class CellRateThrottle implements Throttle {
+public class CellRateThrottle extends CompoundThrottle {
 
 	static final long FREQUENCY = new GenericCellRateAlgorithm().frequency();
-	static final Throttle OPTIMIST = new OptimisticThrottle();
 	
 	/**
-	 * Convert the microseconds used by the Throttle to the milliseconds used by the JVM,
+	 * Convert the ticks used by the Throttle to the milliseconds used by the JVM,
 	 * rounding up by the ceiling, appropriate as the sole parameter for
 	 * Thread.sleep(milliseconds).
-	 * @param us is microseconds.
+	 * @param us is ticks.
 	 * @return milliseconds.
 	 */
 	public static long delay2ms(long us) { return GenericCellRateAlgorithm.delay2ms(us); }
 	
 	/**
-	 * Convert the microseconds used by the Throttle to the milliseconds used by the JVM,
+	 * Convert the ticks used by the Throttle to the milliseconds used by the JVM,
 	 * extract just the whole number of milliseconds, appropriate for the first parameter
 	 * of Thread.sleep(milliseconds,nanoseconds).
-	 * @param us is microseconds.
+	 * @param us is ticks.
 	 * @return milliseconds.
 	 */
 	public static long delay2ms1(long us) { return GenericCellRateAlgorithm.delay2ms1(us); }
 	
 	/**
-	 * Convert the microseconds used by the Throttle to the nanoseconds used by the JVM,
+	 * Convert the ticks used by the Throttle to the nanoseconds used by the JVM,
 	 * extract just the fractional number of nanoseconds less than a millisecond,
 	 * appropriate for the second parameter of Thread.sleep(milliseconds,nanoseconds).
-	 * @param us is microseconds.
+	 * @param us is ticks.
 	 * @return nanoseconds.
 	 */
 	public static int delay2ns2(long us) { return GenericCellRateAlgorithm.delay2ns2(us); }
 	
-	Throttle peak;
-	Throttle sustained;
-
 	/**
 	 * Compute the GCRA increment for a constant bit rate (CBR) traffic contract.
 	 * @param pcr is the peak cell rate in cells per second.
 	 * @param cdvt is the cell delay variation tolerance in microseconds.
-	 * @return the increment in microseconds.
+	 * @return the increment in ticks.
 	 */
 	public static long increment(int pcr, int cdvt) {
 		long p = (pcr > 0) ? pcr : 0;
@@ -105,7 +98,7 @@ public class CellRateThrottle implements Throttle {
 	 * Compute the GCRA limit for a constant bit rate (CBR) traffic contract.
 	 * @param pcr is the peak cell rate in cells per second.
 	 * @param cdvt is the cell delay variation tolerance in microseconds.
-	 * @return the limit in microseconds.
+	 * @return the limit in ticks.
 	 */	
 	public static long limit(int pcr, int cdvt) {
 		long c = (cdvt >= 0) ? cdvt : 0;
@@ -114,12 +107,12 @@ public class CellRateThrottle implements Throttle {
 	}
 	
 	/**
-	 * Compute the increment for a variable bit rate (VBR) traffic contract.
+	 * Compute the GCRA increment for a variable bit rate (VBR) traffic contract.
 	 * @param pcr is the peak cell rate in cells per second.
 	 * @param cdvt is the cell delay variation tolerance in microseconds.
-	 * @param scr is the sustainable cell rate in cells per second.
+	 * @param scr is the sustained cell rate in cells per second.
 	 * @param mbs is the maximum burst size in cells.
-	 * @return the increment in microseconds.
+	 * @return the increment in ticks.
 	 */
 	public static long increment(int pcr, int cdvt, int scr, int mbs) {
 		long s = scr;
@@ -131,9 +124,9 @@ public class CellRateThrottle implements Throttle {
 	 * Compute the GCRA limit for a variable bit rate (VBR) traffic contract.
 	 * @param pcr is the peak cell rate in cells per second.
 	 * @param cdvt is the cell delay variation tolerance in microseconds.
-	 * @param scr is the sustainable cell rate in cells per second.
+	 * @param scr is the sustained cell rate in cells per second.
 	 * @param mbs is the maximum burst size in cells.
-	 * @return the limit in microseconds.
+	 * @return the limit in ticks.
 	 */		
 	public static long limit(int pcr, int cdvt, int scr, int mbs) {
 		long l = limit(pcr, cdvt);
@@ -147,18 +140,20 @@ public class CellRateThrottle implements Throttle {
 	 * Ctor for a variable bit rate (VBR) traffic contract.
 	 * @param pcr is the peak cell rate in cells per second.
 	 * @param cdvt is the cell delay variation (jitter) tolerance in microseconds.
-	 * @param scr is the sustainable cell rate in cells per second.
+	 * @param scr is the sustained cell rate in cells per second.
 	 * @param mbs is the maximum burst size in cells.
 	 */
 	public CellRateThrottle(int pcr, int cdvt, int scr, int mbs) {
-		this(pcr, cdvt);
-		sustained = new GenericCellRateAlgorithm(increment(pcr, cdvt, scr, mbs), limit(pcr, cdvt, scr, mbs));
+		super(
+		    new GenericCellRateAlgorithm(increment(pcr, cdvt), limit(pcr, cdvt)),
+			new GenericCellRateAlgorithm(increment(pcr, cdvt, scr, mbs), limit(pcr, cdvt, scr, mbs))
+		);
 	}
 
 	/**
 	 * Ctor for a variable bit rate (VBR) traffic contract with a CDVT of zero microseconds.
 	 * @param pcr is the peak cell rate in cells per second.
-	 * @param scr is the sustainable cell rate in cells per second.
+	 * @param scr is the sustained cell rate in cells per second.
 	 * @param mbs is the maximum burst size in cells.
 	 */
 	public CellRateThrottle(int pcr, int scr, int mbs) {
@@ -171,8 +166,9 @@ public class CellRateThrottle implements Throttle {
 	 * @param cdvt is the cell delay variation (jitter) tolerance in microseconds.
 	 */
 	public CellRateThrottle(int pcr, int cdvt) {
-		peak = new GenericCellRateAlgorithm(increment(pcr, cdvt), limit(pcr, cdvt));
-		sustained = OPTIMIST;
+		super(
+	        new GenericCellRateAlgorithm(increment(pcr, cdvt), limit(pcr, cdvt))
+		);
 	}
 	
 	/**
@@ -191,95 +187,5 @@ public class CellRateThrottle implements Throttle {
 	public CellRateThrottle() {
 		this(Integer.MAX_VALUE);
 	}
-
-	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#reset()
-	 */
-	public void reset() {
-		reset(time());
-	}
-
-	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#reset(long)
-	 */
-	public void reset(long ticks) {
-		peak.reset(ticks);
-		sustained.reset(ticks);
-	}
-
-	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#admissible()
-	 */
-	public long admissible() {
-		return admissible(time());
-	}
-
-	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#admissible(long)
-	 */
-	public long admissible(long ticks) {
-		long peakAdmissible = peak.admissible(ticks);
-		long sustainedAdmissible = sustained.admissible(ticks);
-		return (peakAdmissible > sustainedAdmissible) ? peakAdmissible : sustainedAdmissible;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#commit()
-	 */
-	public boolean commit() {
-		boolean peakCommit = peak.commit();
-		boolean sustainedCommit = sustained.commit();
-		return peakCommit && sustainedCommit;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#rollback()
-	 */
-	public boolean rollback() {
-		boolean peakRollback = peak.rollback();
-		boolean sustainedRollback = sustained.rollback();
-		return peakRollback && sustainedRollback;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#isAlarmed()
-	 */
-	public boolean isAlarmed() {
-		boolean peakAlarm = peak.isAlarmed();
-		boolean sustainedAlarm = sustained.isAlarmed();
-		return peakAlarm || sustainedAlarm;
-	}
 	
-	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#isValid()
-	 */
-	public boolean isValid() {
-		boolean peakValid = peak.isValid();
-		boolean sustainedValid = sustained.isValid();
-		return peakValid && sustainedValid;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#frequency()
-	 */
-	public long frequency() {
-		return peak.frequency();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#time()
-	 */
-	public long time() {
-		return peak.time();
-	}
-
-	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.Throttle#toString()
-	 */
-	public String toString() {
-		return this.getClass().getName()
-			+ "{peak=" + peak.toString()
-			+ ",sustained=" + sustained.toString()
-			+ "}";
-	}
 }
