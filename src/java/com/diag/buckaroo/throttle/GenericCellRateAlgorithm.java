@@ -34,10 +34,10 @@ package com.diag.buckaroo.throttle;
  * ticks between conforming cells) and the Limit (the total time in ticks that a cell
  * stream may deviate from conformance). A constant bit rate (CBR) traffic contract based
  * just on the Peak Cell Rate (PCR) and the Cell Delay Variation Tolerance (CDVT) would use
- * just one of these throttles, GenericCellRateAlgorithm(PCR,CDVT). A variable bit rate
+ * just one of these throttles, GenericCellRateAlgorithm(PCR, CDVT). A variable bit rate
  * (VBR) traffic contract based on PCR and CDVT plus the Sustainable Cell Rate (SCR) and the
  * Maximum Burst Size (MBS) would use two of these throttles in conjunction, the prior
- * throttle and GenericCellRateAlgorithm(1/SCR,CDVT+((MBS-1)*((1/PCR)-(1/SCR)))) where
+ * throttle plus GenericCellRateAlgorithm(1/SCR, CDVT+((MBS-1)*((1/SCR)-(1/PCR)))) where
  * conforming cells would have to conform to both contracts simultaneously.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
@@ -51,60 +51,60 @@ public class GenericCellRateAlgorithm implements Throttle {
 	public final static long US_PER_S = 1000000;
 	
 	/**
-	 * Convert the milliseconds used by the JVM to the microseconds used by the Throttle,
+	 * Convert the milliseconds used by the JVM to the ticks used by the Throttle,
 	 * appropriate for use as an increment.
 	 * @param ms is milliseconds.
-	 * @return microseconds.
+	 * @return ticks.
 	 */
 	public static long ms2increment(long ms) { return ms * US_PER_MS; }
 	
 	/**
-	 * Convert the milliseconds used by the JVM to the microseconds used by the Throttle,
+	 * Convert the milliseconds used by the JVM to the ticks used by the Throttle,
 	 * appropriate for use as a limit.
 	 * @param ms is milliseconds.
-	 * @return microseconds.
+	 * @return ticks.
 	 */
 	public static long ms2limit(long ms) { return ms * US_PER_MS; }
 	
 	/**
-	 * Convert the nanoseconds used by the JVM to the microseconds used by the Throttle,
+	 * Convert the nanoseconds used by the JVM to the ticks used by the Throttle,
 	 * rounding up by the ceiling, appropriate for use as an increment.
 	 * @param ns is nanoseconds.
-	 * @return microseconds.
+	 * @return ticks.
 	 */
 	public static long ns2increment(long ns) { return (ns + NS_PER_US - 1) / NS_PER_US; }
 	
 	/**
-	 * Convert the nanoseconds used by the JVM to the microseconds used by the Throttle,
+	 * Convert the nanoseconds used by the JVM to the ticks used by the Throttle,
 	 * truncating by the floor, appropriate for use as a limit.
 	 * @param ns is nanoseconds.
-	 * @return microseconds.
+	 * @return ticks.
 	 */
 	public static long ns2limit(long ns) { return ns  / NS_PER_US; }
 	
 	/**
-	 * Convert the microseconds used by the Throttle to the milliseconds used by the JVM,
+	 * Convert the ticks used by the Throttle to the milliseconds used by the JVM,
 	 * rounding up by the ceiling, appropriate as the sole parameter for
 	 * Thread.sleep(milliseconds).
-	 * @param us is microseconds.
+	 * @param us is ticks.
 	 * @return milliseconds.
 	 */
 	public static long delay2ms(long us) { return (us + US_PER_MS - 1) / US_PER_MS; }
 	
 	/**
-	 * Convert the microseconds used by the Throttle to the milliseconds used by the JVM,
+	 * Convert the ticks used by the Throttle to the milliseconds used by the JVM,
 	 * extract just the whole number of milliseconds, appropriate for the first parameter
 	 * of Thread.sleep(milliseconds,nanoseconds).
-	 * @param us is microseconds.
+	 * @param us is ticks.
 	 * @return milliseconds.
 	 */
 	public static long delay2ms1(long us) { return us / US_PER_MS; }
 	
 	/**
-	 * Convert the microseconds used by the Throttle to the nanoseconds used by the JVM,
+	 * Convert the ticks used by the Throttle to the nanoseconds used by the JVM,
 	 * extract just the fractional number of nanoseconds less than a millisecond,
 	 * appropriate for the second parameter of Thread.sleep(milliseconds,nanoseconds).
-	 * @param us is microseconds.
+	 * @param us is ticks.
 	 * @return nanoseconds.
 	 */
 	public static int delay2ns2(long us) { return ((int)(us % US_PER_MS)) * NS_PER_US; }

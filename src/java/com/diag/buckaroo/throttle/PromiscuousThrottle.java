@@ -19,19 +19,22 @@
  */
 package com.diag.buckaroo.throttle;
 
+import com.diag.buckaroo.throttle.ManifoldThrottle;
+
 /**
- * This class implements a throttle that always admits every event.
+ * This class implements a Throttle that always admits every event. It
+ * can be used as either a Throttle or a Manifold Throttle.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
  * @version $Revision$
  */
-public class OptimisticThrottle implements Throttle {
+public class PromiscuousThrottle implements ManifoldThrottle {
 	
 	/**
 	 * Ctor.
 	 */
-	public OptimisticThrottle() { }
+	public PromiscuousThrottle() { }
 
 	/* (non-Javadoc)
 	 * @see com.diag.buckaroo.throttle.Throttle#reset()
@@ -57,6 +60,11 @@ public class OptimisticThrottle implements Throttle {
 	 * @see com.diag.buckaroo.throttle.Throttle#commit()
 	 */
 	public boolean commit() { return true; }
+
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.ManifoldThrottle#commit(int)
+	 */
+	public boolean commit(int count) { return true; }
 
 	/* (non-Javadoc)
 	 * @see com.diag.buckaroo.throttle.Throttle#rollback()

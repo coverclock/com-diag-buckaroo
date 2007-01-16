@@ -19,82 +19,91 @@
  */
 package com.diag.buckaroo.throttle;
 
+import com.diag.buckaroo.throttle.GenericCellRateAlgorithm;
+import com.diag.buckaroo.throttle.ManifoldThrottle;
+
 /**
  * This class extends the Generic Cell Rate Algorithm to accomodate
  * traffic contracts based not on cells per second but on octets per
- * second in which admission decisions are not based on the emission
+ * second, and in which admission decisions are not based on the emission
  * of a single cell but on a packet of octets. The math behind the
  * GCRA computes any emission delay based not on the parameters of the
  * current emission but on whether the prior emission is complete.
  * Hence, this Throttle always admits the first packet, regardless
- * of size (in octets), but delays the subsequent packet. This means,
+ * of size in octets, but may delay the subsequent packet. This means,
  * somewhat counter-intuitively (to me anyway), that the size of the
- * current packet in octets is passed as a parameter of the commit method,
+ * current packet in octets is passed as a parameter to the commit method,
  * not of the admissible method. The increment and limit are based on the
  * inter-arrival time between successive bytes. (If you want a Throttle
  * that is based on the inter-arrival time between successive packets or
- * units such as kilobytes, you can just use the regular Generic Cell Rate
+ * some other constant units, you can just use the regular Generic Cell Rate
  * Algorithm or the Cell Rate Throttle.) The frequency of this Throttle
  * is one nanosecond, versus the one microsecond frequency of the Generic
- * Cell Rate Algorithm. Note that this is not a port of the Desperado C++
- * class BandwidthThrottle, and differs substantially in both design and
- * implementation from that class.
+ * Cell Rate Algorithm. Admission decisions are made on a per packet basis,
+ * rather than on a per byte basis, for reasons of efficiency. For this reason,
+ * and because the entire packet is handed to the underlying platform for transmission
+ * at its own rate, data streams rate controlled by this Throttle exhibit burstier
+ * behavior than cell streams rate controlled by the similar GenericCellRateAlgorithm.
+ * Note that this is not a port of the Desperado C++ class BandwidthThrottle, and
+ * differs substantially (its better) in both design and implementation from that class.
+ * Consider the Desperado BandwidthThrottle class to be deprecated and expect a port
+ * of this class from Java to C++ sometime in the future.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
  * @version $Revision$
  */
-public class BandwidthAlgorithm extends GenericCellRateAlgorithm {
+public class BandwidthAlgorithm extends GenericCellRateAlgorithm implements ManifoldThrottle {
 	
 	public final static int NS_PER_MS = 1000000;
 	public final static long NS_PER_S = 1000000000;
 	
 	/**
-	 * Convert the milliseconds used by the JVM to the nanoseconds used by the Throttle,
+	 * Convert the milliseconds used by the JVM to the ticks used by the Throttle,
 	 * appropriate for use as an increment.
 	 * @param ms is milliseconds.
-	 * @return nanoseconds.
+	 * @return ticks.
 	 */
 	public static long ms2increment(long ms) { return ms * NS_PER_MS; }
 	
 	/**
-	 * Convert the milliseconds used by the JVM to the nanoseconds used by the Throttle,
+	 * Convert the milliseconds used by the JVM to the ticks used by the Throttle,
 	 * appropriate for use as a limit.
 	 * @param ms is milliseconds.
-	 * @return nanoseconds.
+	 * @return ticks.
 	 */
 	public static long ms2limit(long ms) { return ms * NS_PER_MS; }
 	
 	/**
-	 * Convert the nanoseconds used by the JVM to the nanoseconds used by the Throttle,
+	 * Convert the nanoseconds used by the JVM to the ticks used by the Throttle,
 	 * appropriate for use as an increment.
 	 * @param ns is nanoseconds.
-	 * @return nanoseconds.
+	 * @return ticks.
 	 */
 	public static long ns2increment(long ns) { return ns; }
 	
 	/**
-	 * Convert the nanoseconds used by the JVM to the nanoseconds used by the Throttle,
+	 * Convert the nanoseconds used by the JVM to the ticks used by the Throttle,
 	 * appropriate for use as a limit.
 	 * @param ns is nanoseconds.
-	 * @return nanoseconds.
+	 * @return ticks.
 	 */
 	public static long ns2limit(long ns) { return ns; }
 		
 	/**
-	 * Convert the nanoseconds used by the Throttle to the milliseconds used by the JVM,
+	 * Convert the ticks used by the Throttle to the milliseconds used by the JVM,
 	 * rounding up by the ceiling, appropriate as the sole parameter for
 	 * Thread.sleep(milliseconds).
-	 * @param ns is nanoseconds.
+	 * @param ns is ticks.
 	 * @return milliseconds.
 	 */
 	public static long delay2ms(long ns) { return (ns + NS_PER_MS - 1) / NS_PER_MS; }
 	
 	/**
-	 * Convert the nanoseconds used by the Throttle to the milliseconds used by the JVM,
+	 * Convert the ticks used by the Throttle to the milliseconds used by the JVM,
 	 * extract just the whole number of milliseconds, appropriate for the first parameter
 	 * of Thread.sleep(milliseconds,nanoseconds).
-	 * @param ns is nanoseconds.
+	 * @param ns is ticks.
 	 * @return milliseconds.
 	 */
 	public static long delay2ms1(long ns) { return ns / NS_PER_MS; }
