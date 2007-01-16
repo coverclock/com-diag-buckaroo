@@ -179,13 +179,16 @@ public class GenericCellRateAlgorithm implements Throttle {
 		alarmed1 = false;
 		now = ticks;
 		long elapsed = now - then;
+		assert (elapsed >= 0) : elapsed;
 		if (x <= elapsed) {
 			x1 = 0;
 		} else {
 			x1 = x - elapsed;
+			assert (x1 >= 0) : x1;
 			if (x1 > limit)
 			{
 				delay = x1 - limit;
+				assert (delay >= 0) : delay;
 				alarmed1 = true;
 			}
 		}
@@ -198,6 +201,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 	public boolean commit() {
 		then = now;
 		x = x1 + increment;
+		assert (x >= 0) : x;
 		alarmed = alarmed1;
 		return !alarmed;
 	}

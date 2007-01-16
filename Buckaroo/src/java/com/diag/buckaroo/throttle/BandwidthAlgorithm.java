@@ -45,7 +45,7 @@ import com.diag.buckaroo.throttle.ManifoldThrottle;
  * at its own rate, data streams rate controlled by this Throttle exhibit burstier
  * behavior than cell streams rate controlled by the similar GenericCellRateAlgorithm.
  * Note that this is not a port of the Desperado C++ class BandwidthThrottle, and
- * differs substantially (its better) in both design and implementation from that class.
+ * differs substantially (it is better) in both design and implementation from that class.
  * Consider the Desperado BandwidthThrottle class to be deprecated and expect a port
  * of this class from Java to C++ sometime in the future.
  *
