@@ -187,5 +187,12 @@ public class CellRateThrottle extends CompoundThrottle {
 	public CellRateThrottle() {
 		this(Integer.MAX_VALUE);
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#toString()
+	 */
+	public String toString() {
+		return CellRateThrottle.class.getSimpleName() + "{" + super.toString() + "}";
+	}
+
 }
