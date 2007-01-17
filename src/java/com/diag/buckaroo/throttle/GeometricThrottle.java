@@ -144,7 +144,7 @@ public class GeometricThrottle implements Throttle {
 	 * @see com.diag.buckaroo.throttle.Throttle#toString()
 	 */
 	public String toString() {
-		return this.getClass().getName()
+		return GeometricThrottle.class.getSimpleName()
 		+ "{consecutive=0x" + Integer.toHexString(consecutive)
 		+ ",consecutive2=0x" + Integer.toHexString(consecutive1)
 		+ ",countdown=" + countdown

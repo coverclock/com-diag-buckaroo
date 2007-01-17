@@ -49,6 +49,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 	public final static int US_PER_MS = 1000;
 	public final static int NS_PER_US = 1000;
 	public final static long US_PER_S = 1000000;
+	public final static long MAXIMUM_TICKS = Long.MAX_VALUE;
 	
 	/**
 	 * Convert the milliseconds used by the JVM to the ticks used by the Throttle,
@@ -109,12 +110,13 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 */
 	public static int delay2ns2(long us) { return ((int)(us % US_PER_MS)) * NS_PER_US; }
 
-	long now;			// time of the most recent attempted emission in usec since the epoch
-	long then;			// time of the most recent committed emission in usec since the epoch
-	long increment;		// virtual scheduler increment, from TM 4.0
-	long limit;			// virtual scheduler limit, from TM 4.0
-	long x;				// virtual scheduler expected elapsed ticks, from TM 4.0
-	long x1;			// virtual scheduler actual elapsed ticks, from TM 4.0
+	long now;			// time of the most recent attempted admission in ticks
+	long then;			// time of the most recent committed admission in ticks
+	long increment;		// increment in ticks [TM 4.0]
+	long limit;			// limit in ticks [TM 4.0]
+	long x;				// expected inter-arrival time in ticks [TM 4.0]
+	long x1;			// actual inter-arrival time in ticks [TM 4.0]
+	long x1maximum;		// maximum possible x1
 	boolean alarmed;	// alarm state
 	boolean alarmed1;	// candidate alarm state
 	
@@ -126,11 +128,12 @@ public class GenericCellRateAlgorithm implements Throttle {
 	public GenericCellRateAlgorithm(long increment, long limit) {
 		this.increment = (increment > 0) ? increment : 0;
 		this.limit = (limit > 0) ? limit : 0;
+		this.x1maximum = MAXIMUM_TICKS - this.increment;
 		reset();
 	}
 	
 	/**
-	 * Ctor. The limit is zero to zero microseconds.
+	 * Ctor. The limit is set to zero microseconds.
 	 * @param increment is the virtual scheduler increment or i in microseconds.
 	 */
 	public GenericCellRateAlgorithm(long increment) {
@@ -142,7 +145,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 * set to the maximum possible value.
 	 */
 	public GenericCellRateAlgorithm() {
-		this(0, Long.MAX_VALUE);
+		this(0, MAXIMUM_TICKS);
 	}
 
 	/* (non-Javadoc)
@@ -179,16 +182,13 @@ public class GenericCellRateAlgorithm implements Throttle {
 		alarmed1 = false;
 		now = ticks;
 		long elapsed = now - then;
-		assert (elapsed >= 0) : elapsed;
 		if (x <= elapsed) {
 			x1 = 0;
 		} else {
 			x1 = x - elapsed;
-			assert (x1 >= 0) : x1;
 			if (x1 > limit)
 			{
 				delay = x1 - limit;
-				assert (delay >= 0) : delay;
 				alarmed1 = true;
 			}
 		}
@@ -200,8 +200,11 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 */
 	public boolean commit() {
 		then = now;
-		x = x1 + increment;
-		assert (x >= 0) : x;
+		if (x1 > x1maximum) {
+			x = MAXIMUM_TICKS;
+		} else {
+			x = x1 + increment;
+		}
 		alarmed = alarmed1;
 		return !alarmed;
 	}
@@ -224,7 +227,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 * @see com.diag.buckaroo.throttle.Throttle#isValid()
 	 */
 	public boolean isValid() {
-		return (now >= 0) || (increment >= 0) && (limit >= 0) && (x >= 0) && (x1 >= 0);
+		return (x >= 0) && (x1 >= 0);
 	}
 
 	/* (non-Javadoc)
@@ -245,13 +248,14 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 * @see com.diag.buckaroo.throttle.Throttle#toString()
 	 */
 	public String toString() {
-		return this.getClass().getName()
+		return GenericCellRateAlgorithm.class.getSimpleName()
 			+ "{now=" + now
 			+ ",then=" + then
 			+ ",i=" + increment
 			+ ",l=" + limit
 			+ ",x=" + x
 			+ ",x1=" + x1
+			+ ",x1maximum=" + x1maximum
 			+ ",alarmed=" + alarmed
 			+ ",alarmed1=" + alarmed1
 			+ "}";

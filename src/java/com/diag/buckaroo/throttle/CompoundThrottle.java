@@ -24,12 +24,13 @@ import com.diag.buckaroo.throttle.PromiscuousThrottle;
 import com.diag.buckaroo.throttle.Throttle;
 
 /**
- * Combines one or two Throttles together to form a compound Throttle.
+ * Combines one or two Throttles together to form a Compound Throttle.
  * If there are two Throttles, conformant events must meet the traffic
  * contracts of both Throttles. Typically if one Throttle is used it
- * implements a Constant Bit Rate (CBR) contract with just a peak emission
- * rate, and if two Throttles are used it implements a Variable Bit Rate (VBR)
- * contract with both a peak and a sustained emission rate.
+ * implements a Constant Bit Rate (CBR) contract with just a peak Throttle,
+ * and if two Throttles are used it implements a Variable Bit Rate (VBR)
+ * contract with both a peak and a sustained sustained Throttle. A Compound
+ * Throttle returns the frequency and time of the peak Throttle.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
@@ -145,7 +146,7 @@ public class CompoundThrottle implements Throttle {
 	 * @see com.diag.buckaroo.throttle.Throttle#toString()
 	 */
 	public String toString() {
-		return this.getClass().getName()
+		return CompoundThrottle.class.getSimpleName()
 			+ "{peak=" + peak.toString()
 			+ ",sustained=" + sustained.toString()
 			+ "}";

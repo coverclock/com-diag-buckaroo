@@ -94,6 +94,6 @@ public class PromiscuousThrottle implements ManifoldThrottle {
 	/* (non-Javadoc)
 	 * @see com.diag.buckaroo.throttle.Throttle#toString()
 	 */
-	public String toString() { return this.getClass().getName() + "{}"; }
+	public String toString() { return PromiscuousThrottle.class.getSimpleName() + "{}"; }
 	
 }

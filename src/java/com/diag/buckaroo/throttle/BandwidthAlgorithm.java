@@ -117,29 +117,32 @@ public class BandwidthAlgorithm extends GenericCellRateAlgorithm implements Mani
 	 */
 	public static int delay2ns2(long ns) { return (int)(ns % NS_PER_MS); }
 
+	long octetsmaximum;	// maximum possible octets
+	
 	/**
 	 * Ctor.
-	 * @param increment is the virtual scheduler increment or i in microseconds.
-	 * @param limit is the virtual scheduler limit or l in microseconds.
+	 * @param increment is the virtual scheduler increment or i in nanoseconds.
+	 * @param limit is the virtual scheduler limit or l in nanoseconds.
 	 */
 	public BandwidthAlgorithm(long increment, long limit) {
 		super(increment, limit);
+		this.octetsmaximum = (this.increment == 0) ? MAXIMUM_TICKS : MAXIMUM_TICKS / this.increment;
 	}
 	
 	/**
-	 * Ctor. The limit is zero to zero microseconds.
-	 * @param increment is the virtual scheduler increment or i in microseconds.
+	 * Ctor. The limit is zero nanoseconds.
+	 * @param increment is the virtual scheduler increment or i in nanoseconds.
 	 */
 	public BandwidthAlgorithm(long increment) {
-		super(increment);
+		this(increment, 0);
 	}
 	
 	/**
-	 * Ctor. The increment is set to zero microseconds and the limit is
+	 * Ctor. The increment is set to zero nanoseconds and the limit is
 	 * set to the maximum possible value.
 	 */
 	public BandwidthAlgorithm() {
-		super();
+		this(0, MAXIMUM_TICKS);
 	}
 
 	/* (non-Javadoc)
@@ -149,16 +152,22 @@ public class BandwidthAlgorithm extends GenericCellRateAlgorithm implements Mani
 		return commit(1);
 	}
 
-	/**
-	 * Commit the throttle state computing the virtual scheduler expected
-	 * elapsed ticks based on the specified number of octets. This is an extension
-	 * of the Throttle interface.
-	 * @param octets is the number of octets to be emitted.
-	 * @return true if the throttle is not currently alarmed, false otherwise.
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.ManifoldThrottle#commit(int)
 	 */
 	public boolean commit(int octets) {
 		then = now;
-		x = x1 + (octets * increment);
+		if (octets > octetsmaximum) {
+			x = MAXIMUM_TICKS;
+		} else {
+			long increment2 = octets * increment;
+			long maximum2 = MAXIMUM_TICKS - increment2;
+			if (x1 > maximum2) {
+				x = MAXIMUM_TICKS;
+			} else {
+				x = x1 + increment2;
+			}
+		}
 		alarmed = alarmed1;
 		return !alarmed;
 	}
@@ -175,6 +184,16 @@ public class BandwidthAlgorithm extends GenericCellRateAlgorithm implements Mani
 	 */
 	public long time() {
 		return System.nanoTime();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#toString()
+	 */
+	public String toString() {
+		return BandwidthAlgorithm.class.getSimpleName()
+			+ "{" + super.toString()
+			+ ",octetsmaximum=" + octetsmaximum
+			+ "}";
 	}
 
 }

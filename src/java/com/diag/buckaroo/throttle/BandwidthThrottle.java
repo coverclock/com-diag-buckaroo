@@ -190,4 +190,10 @@ public class BandwidthThrottle extends CompoundManifoldThrottle {
 		this(Integer.MAX_VALUE);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#toString()
+	 */
+	public String toString() {
+		return BandwidthThrottle.class.getSimpleName() + "{" + super.toString() + "}";
+	}
 }

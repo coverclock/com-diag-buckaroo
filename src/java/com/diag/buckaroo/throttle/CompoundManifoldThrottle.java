@@ -27,8 +27,9 @@ import com.diag.buckaroo.throttle.ManifoldThrottle;
  * Manifold Throttle. If there are two Throttles, conformant events must
  * meet the traffic contracts of both Throttles. Typically if one Throttle
  * is used it implements a Constant Bit Rate (CBR) contract with just a peak
- * emission rate, and if two Throttles are used it implements a Variable Bit
- * Rate (VBR) contract with both a peak and a sustained emission rate.
+ * Manifold Throttle, and if two Throttles are used it implements a Variable Bit
+ * Rate (VBR) contract with both a peak and a sustained Manifold Throttle. A Compound
+ * Manifold Throttle returns the frequency and time of the peak Manifold Throttle.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
@@ -67,4 +68,15 @@ public class CompoundManifoldThrottle extends CompoundThrottle implements Manifo
 		return peakCommit && sustainedCommit;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#toString()
+	 */
+	public String toString() {
+		return CompoundManifoldThrottle.class.getSimpleName()
+			+ "{" + super.toString()
+			+ ",peak=" + peak.toString()
+			+ ",sustained=" + sustained.toString()
+			+ "}";
+	}
+
 }
