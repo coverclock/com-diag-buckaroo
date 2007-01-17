@@ -31,6 +31,7 @@ public class TestPromiscuousThrottle extends TestCase {
 		assertTrue(pt.isValid());
 		assertFalse(pt.isAlarmed());
 		assertNotNull(pt.toString());
+		System.out.println("pt=" + pt);
 	}
 	
 	public void test01Time() {
