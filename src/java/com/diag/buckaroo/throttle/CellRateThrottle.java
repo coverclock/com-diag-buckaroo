@@ -110,12 +110,14 @@ public class CellRateThrottle extends CompoundThrottle {
 	 * Compute the GCRA increment for a variable bit rate (VBR) traffic contract.
 	 * @param pcr is the peak cell rate in cells per second.
 	 * @param cdvt is the cell delay variation tolerance in microseconds.
-	 * @param scr is the sustained cell rate in cells per second.
+	 * @param scr is the sustained cell rate in cells per second which must be less than or equal to the pcr.
 	 * @param mbs is the maximum burst size in cells.
 	 * @return the increment in ticks.
 	 */
 	public static long increment(int pcr, int cdvt, int scr, int mbs) {
-		long s = scr;
+		long s = (scr > 0) ? scr : 0;
+		long p = (pcr > 0) ? pcr : 0;
+		if (s > p) { s = p; }
 		long i = (s > 0) ? (FREQUENCY + s - 1) / s : Long.MAX_VALUE;
 		return (i >= 0) ? i : Long.MAX_VALUE;
 	}
