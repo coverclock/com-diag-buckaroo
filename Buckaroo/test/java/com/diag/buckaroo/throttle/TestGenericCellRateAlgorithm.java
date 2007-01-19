@@ -51,17 +51,40 @@ public class TestGenericCellRateAlgorithm extends TestCase {
 
 	public void test00Construction() {	
 		
-		long[] increments = new long[] { Long.MIN_VALUE, 0, Long.MAX_VALUE };
-		long[] limits = new long[] { Long.MIN_VALUE, 0, Long.MAX_VALUE };
+		long[] values = new long[] {
+				Long.MIN_VALUE,
+				-1L,
+				0L,
+				1L,
+				10L,
+				100L,
+				1000L,
+				10000L,
+				100000L,
+				1000000L,
+				10000000L,
+				100000000L,
+				1000000000L,
+				10000000000L,
+				100000000000L,
+				1000000000000L,
+				10000000000000L,
+				100000000000000L,
+				1000000000000000L,
+				10000000000000000L,
+				100000000000000000L,
+				1000000000000000000L,
+				Long.MAX_VALUE
+			};
 		
 		Throttle gcra = new GenericCellRateAlgorithm();
 		System.out.println("gcra=" + gcra);
 		validateInitialState(gcra);
-		for (long increment : increments) {
+		for (long increment : values) {
 			gcra = new GenericCellRateAlgorithm(increment);
 			System.out.println("i=" + increment + " gcra=" + gcra);
 			validateInitialState(gcra);
-			for (long limit : limits)
+			for (long limit : values)
 			{
 				gcra = new GenericCellRateAlgorithm(increment, limit);
 				System.out.println("i=" + increment + " l=" + limit + " gcra=" + gcra);
