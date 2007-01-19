@@ -103,7 +103,7 @@ public class BandwidthThrottle extends CompoundManifoldThrottle {
 	 * @return the limit in ticks.
 	 */	
 	public static long limit(int pbr, int jt) {
-		long j = (jt >= 0) ? jt : 0;
+		long j = (jt > 0) ? jt : 0;
 		long l = j;
 		return l;
 	}
@@ -117,7 +117,9 @@ public class BandwidthThrottle extends CompoundManifoldThrottle {
 	 * @return the increment in ticks.
 	 */
 	public static long increment(int pbr, int jt, int sbr, int mbs) {
-		long s = sbr;
+		long s = (sbr > 0) ? sbr : 0;
+		long p = (pbr > 0) ? pbr : 0;
+		if (s > p) { s = p; }
 		long i = (s > 0) ? (FREQUENCY + s - 1) / s : Long.MAX_VALUE;
 		return (i >= 0) ? i : Long.MAX_VALUE;
 	}
