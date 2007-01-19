@@ -49,7 +49,24 @@ public class TestCellRateThrottle extends TestCase {
 	}
 
 	public void test00Construction() {
-		int[] values = new int[] { Integer.MIN_VALUE, 0, Integer.MAX_VALUE };
+		
+		int[] values = new int[] {
+			Integer.MIN_VALUE,
+			-1,
+			0,
+			1,
+			10,
+			100,
+			1000,
+			10000,
+			100000,
+			1000000,
+			10000000,
+			100000000,
+			1000000000,
+			Integer.MAX_VALUE
+		};
+		
 		Throttle crt = new CellRateThrottle();
 		System.out.println("crt=" + crt);
 		validateInitialState(crt);
