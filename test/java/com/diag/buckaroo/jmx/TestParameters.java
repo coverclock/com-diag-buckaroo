@@ -19,6 +19,7 @@
  */
 package com.diag.buckaroo.jmx;
 
+import com.diag.buckaroo.jmx.CallBack;
 import com.diag.buckaroo.jmx.Parameters;
 import com.diag.buckaroo.utility.Bean;
 
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 import java.util.Set;
+
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -43,10 +45,16 @@ public class TestParameters extends TestCase {
 	int changing;
 	String[] changed = new String[15];
 	
-	public class CallBack extends Parameters.CallBack {
-		public CallBack(Parameters parameters) { parameters.super(); }
+	public class MyCallBack implements CallBack {
+		Parameters parameters;
+		public MyCallBack(Parameters parameters) { this.parameters = parameters; }
 		public void callback(String name) {
-			System.err.println(name + " changed");
+			System.err.println(parameters.getClass().getName()
+					+ "[0x"
+					+ Integer.toHexString(parameters.hashCode())
+					+ "]."
+					+ name
+					+ " changed");
 			if (changing < changed.length) { changed[changing++] = name; }
 		}
 	}
@@ -58,7 +66,7 @@ public class TestParameters extends TestCase {
 		InputStream stream = new FileInputStream("./test/in/TestParameters.properties");
 		properties.load(stream);
 		parameters = new Parameters(properties);
-		Parameters.CallBack callback = new CallBack(parameters);
+		CallBack callback = new MyCallBack(parameters);
 		parameters.setCallBack(callback);
 	}
 	
