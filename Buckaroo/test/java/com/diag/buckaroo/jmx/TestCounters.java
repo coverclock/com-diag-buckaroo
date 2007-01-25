@@ -19,9 +19,12 @@
  */
 package com.diag.buckaroo.jmx;
 
+import com.diag.buckaroo.jmx.CallBack;
 import com.diag.buckaroo.jmx.Counters;
 import com.diag.buckaroo.utility.Bean;
+
 import java.util.Set;
+
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -52,10 +55,16 @@ public class TestCounters extends TestCase {
 	int changing;
 	String[] changed = new String[15];
 	
-	public class CallBack extends Counters.CallBack {
-		public CallBack(Counters counters) { counters.super(); }
+	public class MyCallBack implements CallBack {
+		Counters counters;
+		public MyCallBack(Counters counters) { this.counters = counters; }
 		public void callback(String name) {
-			System.err.println(name + " changed");
+			System.err.println(counters.getClass().getName()
+				+ "[0x"
+				+ Integer.toHexString(counters.hashCode())
+				+ "]."
+				+ name
+				+ " changed");
 			if (changing < changed.length) { changed[changing++] = name; }
 		}
 	}
@@ -64,7 +73,7 @@ public class TestCounters extends TestCase {
 		String value = System.getProperty(this.getClass().getSimpleName());
 		delay = (value != null) ? Long.parseLong(value) : 0;
 		counters = new Counters(Counter.class);
-		Counters.CallBack callback = new CallBack(counters);
+		CallBack callback = new MyCallBack(counters);
 		counters.setCallBack(callback);
 		errors = new Counters(Error.class);
 	}
