@@ -43,12 +43,12 @@ import javax.management.ObjectInstance;
  */
 public class LifeCycle {
 
-	static final Logger DEFAULT_LOGGER = Logger.getLogger(LifeCycle.class.getName());
+	protected static final Logger DEFAULT_LOGGER = Logger.getLogger(LifeCycle.class.getName());
 	
-	Logger log = DEFAULT_LOGGER;
-	MBeanServer server = ManagementFactory.getPlatformMBeanServer();
+	private Logger log = DEFAULT_LOGGER;
+	private MBeanServer server = ManagementFactory.getPlatformMBeanServer();
 	
-	ObjectName name;
+	private ObjectName name;
 	
 	/**
 	 * Ctor. A default logger (the Java logger), MBean name (based on the name of this class),

@@ -117,7 +117,7 @@ public class BandwidthAlgorithm extends GenericCellRateAlgorithm implements Mani
 	 */
 	public static int delay2ns2(long ns) { return (int)(ns % NS_PER_MS); }
 
-	long octetsmaximum;	// maximum possible octets
+	private long octetsmaximum;	// maximum possible octets
 	
 	/**
 	 * Ctor.

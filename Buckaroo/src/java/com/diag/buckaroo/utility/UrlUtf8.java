@@ -16,7 +16,7 @@ package com.diag.buckaroo.utility;
  */
 public class UrlUtf8 {
 
-	private final static String[] hex = {
+	protected final static String[] hex = {
 		"%00", "%01", "%02", "%03", "%04", "%05", "%06", "%07",
 		"%08", "%09", "%0a", "%0b", "%0c", "%0d", "%0e", "%0f",
 		"%10", "%11", "%12", "%13", "%14", "%15", "%16", "%17",

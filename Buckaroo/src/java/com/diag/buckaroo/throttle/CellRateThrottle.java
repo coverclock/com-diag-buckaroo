@@ -53,7 +53,7 @@ import com.diag.buckaroo.throttle.GenericCellRateAlgorithm;
  */
 public class CellRateThrottle extends CompoundThrottle {
 
-	static final long FREQUENCY = new GenericCellRateAlgorithm().frequency();
+	protected static final long FREQUENCY = new GenericCellRateAlgorithm().frequency();
 	
 	/**
 	 * Convert the ticks used by the Throttle to the milliseconds used by the JVM,

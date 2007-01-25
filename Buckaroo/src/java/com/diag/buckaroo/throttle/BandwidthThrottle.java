@@ -55,7 +55,7 @@ import com.diag.buckaroo.throttle.CompoundManifoldThrottle;
  */
 public class BandwidthThrottle extends CompoundManifoldThrottle {
 
-	static final long FREQUENCY = new BandwidthAlgorithm().frequency();
+	protected static final long FREQUENCY = new BandwidthAlgorithm().frequency();
 	
 	/**
 	 * Convert the ticks used by the Throttle to the milliseconds used by the JVM,

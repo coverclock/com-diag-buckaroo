@@ -50,10 +50,11 @@ import java.util.NoSuchElementException;
  */
 public class Link<Type> implements Iterable<Link<Type>> {
 
-	Link<Type> next = this;
-	Link<Type> previous = this;
-	Link<Type> root = this;
-	Type payload;
+	private Link<Type> next = this;
+	private Link<Type> previous = this;
+	private Link<Type> root = this;
+
+	protected Type payload;
 	
 	/**
 	 * Ctor. The payload reference is set to null.

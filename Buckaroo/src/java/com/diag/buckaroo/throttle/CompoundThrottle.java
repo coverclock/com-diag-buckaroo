@@ -38,10 +38,10 @@ import com.diag.buckaroo.throttle.Throttle;
  */
 public class CompoundThrottle implements Throttle {
 
-	static final ManifoldThrottle PROMISCUOUS = new PromiscuousThrottle();
+	protected static final ManifoldThrottle PROMISCUOUS = new PromiscuousThrottle();
 	
-	Throttle peak;
-	Throttle sustained;
+	private Throttle peak;
+	private Throttle sustained;
 
 	/**
 	 * Ctor for a variable bit rate (VBR) traffic contract.
