@@ -174,13 +174,13 @@
 	</target>
 	
 	<target name="coverage" depends="instrument, tst-out-dir, classpaths">
-		<junit fork="yes" failureProperty="test.failed" printsummary="withOutAndErr" showoutput="yes">
+		<junit failureProperty="test.failed" printsummary="withOutAndErr" showoutput="yes">
 			<sysproperty key="net.sourceforge.cobertura.datafile" file="${cob.ser}" />
 			<classpath>
 				<path refid="coverage.classpath"/>
 			</classpath>
 			<formatter type="xml"/>
-			<batchtest todir="${cob-xml.dir}">
+			<batchtest fork="yes" todir="${cob-xml.dir}">
 				<fileset dir="${unit.dir}">
 					<include name="${unittest.list}"/>
 				</fileset>
