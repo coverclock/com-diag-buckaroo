@@ -36,6 +36,8 @@ import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.ReflectionException;
 
+import com.diag.buckaroo.jmx.CallBack;
+
 /**
  * This class encapsulates a Properties of Strings that can be used in an
  * application as simple parameters. The array is sized, labelled, and
@@ -57,14 +59,10 @@ public class Parameters extends LifeCycle implements DynamicMBean {
 	private final static String REMOVE = "remove";
 	private final static String SET = "set";
 	private final static String GET = "get";
-	
-	public class CallBack implements com.diag.buckaroo.jmx.CallBack {
-		public void callback(String string) { }
-	}
 
-	Properties properties;
-	MBeanInfo info;
-	volatile CallBack callback;
+	private Properties properties;
+	private MBeanInfo info;
+	private volatile CallBack callback;
 
 	/**
 	 * Ctor.
@@ -75,6 +73,14 @@ public class Parameters extends LifeCycle implements DynamicMBean {
 	public Parameters(Properties properties) {
 		this.properties = properties;
 		init();
+	}
+	
+	/**
+	 * Get the current callback.
+	 * @return the callback.
+	 */
+	public CallBack getCallBack() {
+		return callback;
 	}
 	
 	/**

@@ -110,15 +110,15 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 */
 	public static int delay2ns2(long us) { return ((int)(us % US_PER_MS)) * NS_PER_US; }
 
-	long now;			// time of the most recent attempted admission in ticks
-	long then;			// time of the most recent committed admission in ticks
-	long increment;		// increment in ticks [TM 4.0]
-	long limit;			// limit in ticks [TM 4.0]
-	long x;				// expected inter-arrival time in ticks [TM 4.0]
-	long x1;			// actual inter-arrival time in ticks [TM 4.0]
-	long x1maximum;		// maximum possible x1
-	boolean alarmed;	// alarm state
-	boolean alarmed1;	// candidate alarm state
+	protected long now;			// time of the most recent attempted admission in ticks
+	protected long then;		// time of the most recent committed admission in ticks
+	protected long increment;	// increment in ticks [TM 4.0]
+	protected long limit;		// limit in ticks [TM 4.0]
+	protected long x;			// expected inter-arrival time in ticks [TM 4.0]
+	protected long x1;			// actual inter-arrival time in ticks [TM 4.0]
+	protected long x1maximum;	// maximum possible x1
+	protected boolean alarmed;	// alarm state
+	protected boolean alarmed1;	// candidate alarm state
 	
 	/**
 	 * Ctor.

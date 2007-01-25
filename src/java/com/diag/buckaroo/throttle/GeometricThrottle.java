@@ -37,12 +37,12 @@ package com.diag.buckaroo.throttle;
  */
 public class GeometricThrottle implements Throttle {
 	
-	int consecutive;
-	int consecutive1;
-	int countdown;
-	int countdown1;
-	boolean alarmed;
-	boolean alarmed1;
+	private int consecutive;
+	private int consecutive1;
+	private int countdown;
+	private int countdown1;
+	private boolean alarmed;
+	private boolean alarmed1;
 	
 	/**
 	 * Ctor.

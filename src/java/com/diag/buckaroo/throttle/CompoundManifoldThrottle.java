@@ -37,8 +37,8 @@ import com.diag.buckaroo.throttle.ManifoldThrottle;
  */
 public class CompoundManifoldThrottle extends CompoundThrottle implements ManifoldThrottle {
 
-	ManifoldThrottle peak;
-	ManifoldThrottle sustained;
+	private ManifoldThrottle peak;
+	private ManifoldThrottle sustained;
 	
 	/**
 	 * Ctor for a variable bit rate (VBR) traffic contract.

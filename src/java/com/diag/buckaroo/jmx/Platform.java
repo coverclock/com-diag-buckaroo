@@ -37,7 +37,7 @@ import com.diag.buckaroo.utility.Heap;
  */
 public class Platform extends LifeCycle implements PlatformMBean {
 	
-	Class klass;
+	private Class klass;
 	
 	/**
 	 * Ctor. The class instrumented by this managed bean is the class

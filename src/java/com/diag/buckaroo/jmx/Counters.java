@@ -33,6 +33,8 @@ import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.ReflectionException;
 
+import com.diag.buckaroo.jmx.CallBack;
+
 /**
  * This class encapsulates an array of long integers that can be used
  * in an application as simple counters. The array is sized, labelled,
@@ -53,14 +55,10 @@ public class Counters extends LifeCycle implements DynamicMBean {
 
 	private final static String RESET = "reset";
 	
-	public class CallBack implements com.diag.buckaroo.jmx.CallBack {
-		public void callback(String string) { }
-	}
-	
-	long[] counters;
-	Class<? extends Enum> type;
-	MBeanInfo info;
-	volatile CallBack callback;
+	private long[] counters;
+	private Class<? extends Enum> type;
+	private MBeanInfo info;
+	private volatile CallBack callback;
 
 	/**
 	 * Ctor.
@@ -89,6 +87,14 @@ public class Counters extends LifeCycle implements DynamicMBean {
 		}
 		String thisName = this.getClass().getCanonicalName();
 		info = new MBeanInfo(thisName, thisName, attributes, null, operations, null);
+	}
+	
+	/**
+	 * Get the current callback.
+	 * @return the callback.
+	 */
+	public CallBack getCallBack() {
+		return callback;
 	}
 	
 	/**

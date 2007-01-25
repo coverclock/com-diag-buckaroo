@@ -35,9 +35,9 @@ import java.lang.management.MemoryUsage;
  */
 public class Heap {
 	
-	static final MemoryMXBean memory = ManagementFactory.getMemoryMXBean();
+	protected static final MemoryMXBean memory = ManagementFactory.getMemoryMXBean();
 	
-	final MemoryUsage usage = memory.getHeapMemoryUsage();
+	protected final MemoryUsage usage = memory.getHeapMemoryUsage();
 	
 	/**
 	 * Return the committed (guaranteed) size of the heap in bytes.

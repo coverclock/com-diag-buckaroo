@@ -67,33 +67,33 @@ public class Connector {
 	public final static String PROPERTY_JNDI_PORT = "com.diag.buckaroo.jndi.port";
 	public final static String PROPERTY_JNDI_REBIND = "com.diag.buckaroo.jndi.rebind";
 	
-	final static Logger DEFAULT_LOGGER = Logger.getLogger(Connector.class.getName());
-	final static int DEFAULT_JMX_PORT = 32110;
-	final static int DEFAULT_JNDI_PORT = 32111;
-	final static String DEFAULT_PATH = "buckaroo";
+	protected final static Logger DEFAULT_LOGGER = Logger.getLogger(Connector.class.getName());
+	protected final static int DEFAULT_JMX_PORT = 32110;
+	protected final static int DEFAULT_JNDI_PORT = 32111;
+	protected final static String DEFAULT_PATH = "buckaroo";
 	
-	final static String PROPERTY_SSL = "com.sun.management.jmxremote.ssl";
-	final static String PROPERTY_AUTHENTICATE = "com.sun.management.jmxremote.authenticate";
-	final static String PROPERTY_PASSWORD_FILE = "com.sun.management.jmxremote.password.file";
+	protected final static String PROPERTY_SSL = "com.sun.management.jmxremote.ssl";
+	protected final static String PROPERTY_AUTHENTICATE = "com.sun.management.jmxremote.authenticate";
+	protected final static String PROPERTY_PASSWORD_FILE = "com.sun.management.jmxremote.password.file";
 	
-	final static String PARAMETER_PASSWORD_FILE = "jmx.remote.x.password.file";
+	protected final static String PARAMETER_PASSWORD_FILE = "jmx.remote.x.password.file";
 	
-	final static String ENVIRONMENT_JAVA_HOME = "JAVA_HOME";
-	final static String ENVIRONMENT_JRE_HOME = "JRE_HOME";
+	protected final static String ENVIRONMENT_JAVA_HOME = "JAVA_HOME";
+	protected final static String ENVIRONMENT_JRE_HOME = "JRE_HOME";
 	
-	final static String PATH_JRE = "/jre";
-	final static String PATH_PASSWORD_FILE = "/lib/management/jmxremote.password";
+	protected final static String PATH_JRE = "/jre";
+	protected final static String PATH_PASSWORD_FILE = "/lib/management/jmxremote.password";
 	
-	Logger logger = DEFAULT_LOGGER;
-	String urlPath = DEFAULT_PATH;
-	int jmxPort = DEFAULT_JMX_PORT;
-	int jndiPort = DEFAULT_JNDI_PORT;
-	boolean jndiRebind = Boolean.getBoolean(PROPERTY_JNDI_REBIND);
-	MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-	String passwordFilePath;
+	private Logger logger = DEFAULT_LOGGER;
+	private String urlPath = DEFAULT_PATH;
+	private int jmxPort = DEFAULT_JMX_PORT;
+	private int jndiPort = DEFAULT_JNDI_PORT;
+	private boolean jndiRebind = Boolean.getBoolean(PROPERTY_JNDI_REBIND);
+	private MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+	private String passwordFilePath;
 
-	JMXConnectorServer connectorServer;
-	String canonicalUrlString;
+	private JMXConnectorServer connectorServer;
+	private String canonicalUrlString;
 	
 	private AtomicBoolean started = new AtomicBoolean(false);
 			
