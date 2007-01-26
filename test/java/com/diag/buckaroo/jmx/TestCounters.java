@@ -74,7 +74,9 @@ public class TestCounters extends TestCase {
 		delay = (value != null) ? Long.parseLong(value) : 0;
 		counters = new Counters(Counter.class);
 		CallBack callback = new MyCallBack(counters);
+		assertNull(counters.getCallBack());
 		counters.setCallBack(callback);
+		assertEquals(counters.getCallBack(), callback);
 		errors = new Counters(Error.class);
 	}
 	

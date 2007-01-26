@@ -67,7 +67,9 @@ public class TestParameters extends TestCase {
 		properties.load(stream);
 		parameters = new Parameters(properties);
 		CallBack callback = new MyCallBack(parameters);
+		assertNull(parameters.getCallBack());
 		parameters.setCallBack(callback);
+		assertEquals(parameters.getCallBack(), callback);
 	}
 	
 	private void validate1(String keyword, String expected) {
