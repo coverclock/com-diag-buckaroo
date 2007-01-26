@@ -26,7 +26,7 @@ import com.diag.buckaroo.utility.Resource;
 public class TestResource extends TestCase {
 	
 	private final static String DRIVE = "C:";
-	private final static String WINDOWS = "\\Documents and Settings\\jsloan\\Workspace2\\Buckaroo\\";
+	private final static String WINDOWS = "\\Documents and Settings\\jsloan\\Workspace\\Buckaroo\\";
 	private final static String POSIX = "/home/jsloan/src/Buckaroo";
 	private final static String URL = "http://www.diag.com/ftp/China_Journal.pdf";
 	
@@ -98,11 +98,7 @@ public class TestResource extends TestCase {
 		try {
 			assertNotNull(Resource.createInputStream("file:./test/in/TestFileSupport.txt"));
 			assertNotNull(Resource.createInputStream("./test/in/TestFileSupport.txt"));
-			assertNotNull(Resource.createInputStream(WINDOWS + "test\\in\\TestFileSupport.txt"));
 			assertNotNull(Resource.createInputStream(".\\test\\in\\TestFileSupport.txt"));
-			assertNotNull(Resource.createInputStream(DRIVE + WINDOWS + "test\\in\\TestFileSupport.txt"));
-			assertNotNull(Resource.createInputStream(DRIVE + ".\\test\\in\\TestFileSupport.txt"));
-			// assertNotNull(FileSupport.createInputStream(POSIX + "test/in/TestFileSupport.txt"));
 			assertNotNull(Resource.createInputStream("TestFileSupport.txt"));
 			assertNotNull(Resource.createInputStream(URL));
 			assertNotNull(Resource.createInputStream("java/lang/String.class"));
