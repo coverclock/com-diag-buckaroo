@@ -65,7 +65,7 @@ public class TestGeometricThrottle extends TestCase {
 		assertTrue(gt.commit());
 		assertFalse(gt.isAlarmed());
 		
-		assertTrue(gt.admissible() < 0L);
+		assertEquals(gt.admissible(), Long.MAX_VALUE);
 		assertTrue(gt.rollback());
 		assertFalse(gt.isAlarmed());
 		
@@ -73,7 +73,7 @@ public class TestGeometricThrottle extends TestCase {
 		assertTrue(gt.commit());
 		assertFalse(gt.isAlarmed());
 		
-		assertTrue(gt.admissible() < 0L);
+		assertEquals(gt.admissible(), Long.MAX_VALUE);
 		assertFalse(gt.commit());
 		assertTrue(gt.isAlarmed());
 		
