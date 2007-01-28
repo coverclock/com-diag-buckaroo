@@ -37,6 +37,12 @@ package com.diag.buckaroo.throttle;
  */
 public class GeometricThrottle implements Throttle {
 	
+	/**
+	 * This value is the delay returned when an event is not admissable. It is
+	 * guaranteed to be the maximum possible representable delay.
+	 */
+	public final static long MAXIMUM_TICKS = Long.MAX_VALUE;
+	
 	private int consecutive;
 	private int consecutive1;
 	private int countdown;
@@ -92,7 +98,7 @@ public class GeometricThrottle implements Throttle {
 	            }
 	        }
 	        alarmed1 = true;
-	        delay = -1;
+	        delay = MAXIMUM_TICKS;
 	    } while (false);
 
 	    return delay;

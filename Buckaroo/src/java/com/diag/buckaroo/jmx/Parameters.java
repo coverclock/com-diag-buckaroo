@@ -56,9 +56,9 @@ import com.diag.buckaroo.jmx.CallBack;
  */
 public class Parameters extends LifeCycle implements DynamicMBean {
 
-	private final static String REMOVE = "remove";
-	private final static String SET = "set";
-	private final static String GET = "get";
+	protected final static String REMOVE = "remove";
+	protected final static String SET = "set";
+	protected final static String GET = "get";
 
 	private Properties properties;
 	private MBeanInfo info;

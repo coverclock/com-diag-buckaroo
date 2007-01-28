@@ -83,7 +83,7 @@ public interface Throttle {
 	 * if the event is not emitted. This is done to accomodate different throttle
 	 * implementations which may require this behavior.
 	 * @return the number of ticks from the current time until the next event is admissible
-	 * or negative if this cannot be determined by this type of throttle.
+	 * or the maximum possible value if this cannot be determined by this type of throttle.
 	 */
 	public long admissible();
 
@@ -98,9 +98,7 @@ public interface Throttle {
 	 * implementations which may require this behavior.
 	 * @param ticks is the time of day in the number of ticks since the epoch.
 	 * @return the number of ticks from the current time until the next event is admissible
-	 * or a negative number if this cannot be determined by this type of throttle (such
-	 * throttles typically return either zero meaning admissible now, or a negative number
-	 * meaning not yet).
+	 * or the maximum possible value if this cannot be determined by this type of throttle.
 	 */
 	public long admissible(long ticks);
 
