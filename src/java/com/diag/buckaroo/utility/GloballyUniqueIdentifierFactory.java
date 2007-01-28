@@ -44,6 +44,7 @@ import javax.crypto.spec.PBEKeySpec;
  * @version $Revision$
  */
 public class GloballyUniqueIdentifierFactory {
+	
 	protected static final Logger logger = Logger.getLogger(GloballyUniqueIdentifierFactory.class.getPackage().getName());
 	
 	private final static boolean DEBUG = false; // Do NOT log debugging stuff!

@@ -46,9 +46,24 @@ package com.diag.buckaroo.throttle;
  */
 public class GenericCellRateAlgorithm implements Throttle {
 	
+	/**
+	 * This is the number of microseconds there are in a millisecond.
+	 */
 	public final static int US_PER_MS = 1000;
+	
+	/**
+	 * This is the number of nanoseconds there are in a microsecond.
+	 */
 	public final static int NS_PER_US = 1000;
+	
+	/**
+	 * This is the number of microseconds there are in a second.
+	 */
 	public final static long US_PER_S = 1000000;
+	
+	/**
+	 * This is the maximum possible representable number of ticks.
+	 */
 	public final static long MAXIMUM_TICKS = Long.MAX_VALUE;
 	
 	/**

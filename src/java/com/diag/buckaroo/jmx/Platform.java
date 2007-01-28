@@ -37,7 +37,7 @@ import com.diag.buckaroo.utility.Heap;
  */
 public class Platform extends LifeCycle implements PlatformMBean {
 	
-	private Class klass;
+	private Class type;
 	
 	/**
 	 * Ctor. The class instrumented by this managed bean is the class
@@ -59,10 +59,10 @@ public class Platform extends LifeCycle implements PlatformMBean {
 	/**
 	 * Ctor. The class instrumented by this managed bean is the one
 	 * specified.
-	 * @param klass is the class.
+	 * @param type is the class.
 	 */
-	public Platform(Class klass) {
-		this.klass = klass;
+	public Platform(Class type) {
+		this.type = type;
 	}
 	
 	/**
@@ -103,7 +103,7 @@ public class Platform extends LifeCycle implements PlatformMBean {
 	 * @return a path name.
 	 */
 	public String getClassFilePath() {
-		return getClassFilePath(klass.getName());
+		return getClassFilePath(type.getName());
 	}
 	
 	/**
@@ -112,7 +112,7 @@ public class Platform extends LifeCycle implements PlatformMBean {
 	 * @return a date stamp.
 	 */
 	public String getClassCompilationDate() {
-		return getClassCompilationDate(klass.getName());
+		return getClassCompilationDate(type.getName());
 	}
 	
 	/**

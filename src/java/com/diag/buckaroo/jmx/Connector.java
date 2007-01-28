@@ -63,8 +63,22 @@ import javax.rmi.ssl.SslRMIServerSocketFactory;
  */
 public class Connector {
 	
+	/**
+	 * This is the commandd-line parameter that may be used to set the JMX
+	 * port number used by the Connector.
+	 */
 	public final static String PROPERTY_JMX_PORT = "com.diag.buckaroo.jmx.port";
+	
+	/**
+	 * This is the commandd-line parameter that may be used to set the JNDI
+	 * port number used by the Connector.
+	 */
 	public final static String PROPERTY_JNDI_PORT = "com.diag.buckaroo.jndi.port";
+	
+	/**
+	 * This is the commandd-line parameter that may be used to cause the Connector
+	 * to permit the JNDI port to be rebound.
+	 */
 	public final static String PROPERTY_JNDI_REBIND = "com.diag.buckaroo.jndi.rebind";
 	
 	protected final static Logger DEFAULT_LOGGER = Logger.getLogger(Connector.class.getName());

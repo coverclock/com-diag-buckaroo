@@ -53,7 +53,7 @@ import com.diag.buckaroo.jmx.CallBack;
  */
 public class Counters extends LifeCycle implements DynamicMBean {
 
-	private final static String RESET = "reset";
+	protected final static String RESET = "reset";
 	
 	private long[] counters;
 	private Class<? extends Enum> type;

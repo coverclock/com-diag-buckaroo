@@ -55,7 +55,14 @@ import com.diag.buckaroo.throttle.ManifoldThrottle;
  */
 public class BandwidthAlgorithm extends GenericCellRateAlgorithm implements ManifoldThrottle {
 	
+	/**
+	 * This is the number of nanoseconds there are in a millisecond.
+	 */
 	public final static int NS_PER_MS = 1000000;
+	
+	/**
+	 * This is the number of nanoseconds there are in a second.
+	 */
 	public final static long NS_PER_S = 1000000000;
 	
 	/**
