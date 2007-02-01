@@ -20,32 +20,33 @@
 package com.diag.buckaroo.throttle;
 
 import com.diag.buckaroo.throttle.CompoundThrottle;
-import com.diag.buckaroo.throttle.ManifoldThrottle;
+import com.diag.buckaroo.throttle.ExtendedThrottle;
 
 /**
- * Combines one or two Manifold Throttles together to form a compound 
- * Manifold Throttle. If there are two Throttles, conformant events must
+ * Combines one or two Extended Throttles together to form a compound 
+ * Extended Throttle. If there are two Throttles, conformant events must
  * meet the traffic contracts of both Throttles. Typically if one Throttle
  * is used it implements a Constant Bit Rate (CBR) contract with just a peak
- * Manifold Throttle, and if two Throttles are used it implements a Variable Bit
- * Rate (VBR) contract with both a peak and a sustained Manifold Throttle. A Compound
- * Manifold Throttle returns the frequency and time of the peak Manifold Throttle.
+ * Extended Throttle, and if two Throttles are used it implements a Variable Bit
+ * Rate (VBR) contract with both a peak and a sustained Extended Throttle. A Compound
+ * Extended Throttle returns the frequency and time of the peak Extended Throttle.
+ * This is similar to the Desperado C++ class CompoundThrottle.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
  * @version $Revision$
  */
-public class CompoundManifoldThrottle extends CompoundThrottle implements ManifoldThrottle {
+public class CompoundExtendedThrottle extends CompoundThrottle implements ExtendedThrottle {
 
-	private ManifoldThrottle peak;
-	private ManifoldThrottle sustained;
+	private ExtendedThrottle peak;
+	private ExtendedThrottle sustained;
 	
 	/**
 	 * Ctor for a variable bit rate (VBR) traffic contract.
-	 * @param peak is the Manifold Throttle with the contract for the peak emission rate.
-	 * @param sustained is the Manifold Throttle with the contract for the sustained emission rate.
+	 * @param peak is the Extended Throttle with the contract for the peak emission rate.
+	 * @param sustained is the Extended Throttle with the contract for the sustained emission rate.
 	 */
-	public CompoundManifoldThrottle(ManifoldThrottle peak, ManifoldThrottle sustained) {
+	public CompoundExtendedThrottle(ExtendedThrottle peak, ExtendedThrottle sustained) {
 		super(peak, sustained);
 		this.peak = peak;
 		this.sustained = sustained;
@@ -53,14 +54,14 @@ public class CompoundManifoldThrottle extends CompoundThrottle implements Manifo
 	
 	/**
 	 * Ctor for a constant bit rate (CBR) traffic contract.
-	 * @param peak is the Manifold Throttle with the contract for the peak emission rate.
+	 * @param peak is the Extended Throttle with the contract for the peak emission rate.
 	 */
-	public CompoundManifoldThrottle(ManifoldThrottle peak) {
+	public CompoundExtendedThrottle(ExtendedThrottle peak) {
 		this(peak, CompoundThrottle.PROMISCUOUS);
 	}
 
 	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.ManifoldThrottle#commit(int)
+	 * @see com.diag.buckaroo.throttle.ExtendedThrottle#commit(int)
 	 */
 	public boolean commit(int count) {
 		boolean peakCommit = peak.commit(count);
@@ -72,7 +73,7 @@ public class CompoundManifoldThrottle extends CompoundThrottle implements Manifo
 	 * @see com.diag.buckaroo.throttle.Throttle#toString()
 	 */
 	public String toString() {
-		return CompoundManifoldThrottle.class.getSimpleName()
+		return CompoundExtendedThrottle.class.getSimpleName()
 			+ "{" + super.toString()
 			+ ",peak=" + peak.toString()
 			+ ",sustained=" + sustained.toString()

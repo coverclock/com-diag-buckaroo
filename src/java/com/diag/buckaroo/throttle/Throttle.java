@@ -121,6 +121,9 @@ public interface Throttle {
 	
 	/**
 	 * Returns true if the throtthe is currently alarmed, false otherwise.
+	 * A throttle is alarmed only if the application has forced the event
+	 * stream to go out of specification by commiting an event that was not
+	 * admissible.
 	 * @return true if the throttle is currently alarmed, false otherwise.
 	 */
 	public boolean isAlarmed();
@@ -135,12 +138,23 @@ public interface Throttle {
 	public boolean isValid();
 	
 	/**
+	 * Returns true if the traffic contract can only be approximately implemented.
+	 * This can occur upon construction if the parameters of the traffic contract
+	 * result in, for example, integer overflow during initialization, or during
+	 * operation if, for example, the event stream goes too far out of specification.
+	 * An approximate throttle is still sane and usable, but the event stream may not
+	 * be shaped or policed as intended.
+	 * @return true if the traffic contract can only be approximately implemented.
+	 */
+	public boolean isApproximate();
+	
+	/**
 	 * Return the number of ticks that are in one second. For example,
 	 * if this throttle measures time to one millisecond granularity, return
 	 * one thousand; to one microsecond, one million. Frequencies that are
 	 * not a power of ten are possible (for example, based on the frequency of
-	 * the CPU clock). Frequencies that are not integers are not possible.
-	 * @return the number of ticks that are in one second or a negative number if
+	 * the CPU clock). Frequencies that are not integers are not representable.
+	 * @return the number of ticks that are in one second, or zero if
 	 * this throttle is not time-based.
 	 */
 	public long frequency();
@@ -154,7 +168,7 @@ public interface Throttle {
 	 * ticks less than 2^63 will still be correct. For a tick equal to a nanosecond,
 	 * equivalent to a Throttle frequency of one gigahertz, this yields a maximum elapsed
 	 * time of about 292 years. The value returned by a Throttle which is not time-based
-	 * (the Throttle reports a frequency that is is a negative number) is not defined.
+	 * (the Throttle reports a frequency that is zero) is not defined.
 	 * @return elapsed ticks since an epoch.
 	 */
 	public long time();

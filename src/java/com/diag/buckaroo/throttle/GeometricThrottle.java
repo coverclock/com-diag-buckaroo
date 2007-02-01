@@ -29,7 +29,7 @@ package com.diag.buckaroo.throttle;
  * throttle when the error clears. Several error messages are emitted initially, then with
  * ever decreasing frequency, then no more. This is a good pattern if the log is being
  * watched in real-time, while at the same time not flooding the log with closely spaced
- * messages. This class is a port of the misnamed Desperado C++ class ExponentialThrottle.
+ * messages. This is similar to the Desperado C++ class GeometricThrottle.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
@@ -135,16 +135,21 @@ public class GeometricThrottle implements Throttle {
 	 * @see com.diag.buckaroo.throttle.Throttle#isValid()
 	 */
 	public boolean isValid() { return true; }
+	
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#isApproximate()
+	 */
+	public boolean isApproximate() { return false; }
 
 	/* (non-Javadoc)
 	 * @see com.diag.buckaroo.throttle.Throttle#frequency()
 	 */
-	public long frequency() { return -1; }
+	public long frequency() { return 0; }
 
 	/* (non-Javadoc)
 	 * @see com.diag.buckaroo.throttle.Throttle#time()
 	 */
-	public long time() { return -1; }
+	public long time() { return 0; }
 	
 	/* (non-Javadoc)
 	 * @see com.diag.buckaroo.throttle.Throttle#toString()

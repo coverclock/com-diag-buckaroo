@@ -29,7 +29,7 @@ import com.diag.buckaroo.throttle.Throttle;
  *
  * @version $Revision$
  */
-public interface ManifoldThrottle extends Throttle {
+public interface ExtendedThrottle extends Throttle {
 	
 	/**
 	 * Commit the current throttle state computed by the prior call to the begin

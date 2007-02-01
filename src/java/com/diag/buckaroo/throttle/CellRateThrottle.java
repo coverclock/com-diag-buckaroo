@@ -43,9 +43,8 @@ import com.diag.buckaroo.throttle.GenericCellRateAlgorithm;
  * simultaneously, and where again CDVT may default to zero. Cell streams conforming to a
  * CBR contract must meet the PCR with CDVT limiting the maximum total jitter in the cell
  * stream. Cell streams conforming to a VBR contract must meet the SCR in the long run but
- * may burst as many as MBS cells at PCR with the specified CDVT. This class is a port not
- * of the Desperado C++ class CellRateThrottle but rather is more similar to the class
- * CompoundCellRateThrottle.
+ * may burst as many as MBS cells at PCR with the specified CDVT. This is similar to the
+ * Desperado C++ class CellRateThrottle.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *

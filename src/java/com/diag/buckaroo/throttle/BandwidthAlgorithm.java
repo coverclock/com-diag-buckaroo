@@ -20,7 +20,7 @@
 package com.diag.buckaroo.throttle;
 
 import com.diag.buckaroo.throttle.GenericCellRateAlgorithm;
-import com.diag.buckaroo.throttle.ManifoldThrottle;
+import com.diag.buckaroo.throttle.ExtendedThrottle;
 
 /**
  * This class extends the Generic Cell Rate Algorithm to accomodate
@@ -44,16 +44,13 @@ import com.diag.buckaroo.throttle.ManifoldThrottle;
  * and because the entire packet is handed to the underlying platform for transmission
  * at its own rate, data streams rate controlled by this Throttle exhibit burstier
  * behavior than cell streams rate controlled by the similar GenericCellRateAlgorithm.
- * Note that this is not a port of the Desperado C++ class BandwidthThrottle, and
- * differs substantially (it is better) in both design and implementation from that class.
- * Consider the Desperado BandwidthThrottle class to be deprecated and expect a port
- * of this class from Java to C++ sometime in the future.
+ * This is similar to the Desperado C++ class BandwidthThrottle.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
  * @version $Revision$
  */
-public class BandwidthAlgorithm extends GenericCellRateAlgorithm implements ManifoldThrottle {
+public class BandwidthAlgorithm extends GenericCellRateAlgorithm implements ExtendedThrottle {
 	
 	/**
 	 * This is the number of nanoseconds there are in a millisecond.
@@ -160,17 +157,19 @@ public class BandwidthAlgorithm extends GenericCellRateAlgorithm implements Mani
 	}
 
 	/* (non-Javadoc)
-	 * @see com.diag.buckaroo.throttle.ManifoldThrottle#commit(int)
+	 * @see com.diag.buckaroo.throttle.ExtendedThrottle#commit(int)
 	 */
 	public boolean commit(int octets) {
 		then = now;
 		if (octets > octetsmaximum) {
 			x = MAXIMUM_TICKS;
+			approximate = true;
 		} else {
 			long increment2 = octets * increment;
 			long maximum2 = MAXIMUM_TICKS - increment2;
 			if (x1 > maximum2) {
 				x = MAXIMUM_TICKS;
+				approximate = true;
 			} else {
 				x = x1 + increment2;
 			}

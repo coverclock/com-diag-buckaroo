@@ -19,17 +19,18 @@
  */
 package com.diag.buckaroo.throttle;
 
-import com.diag.buckaroo.throttle.ManifoldThrottle;
+import com.diag.buckaroo.throttle.ExtendedThrottle;
 
 /**
  * This class implements a Throttle that always admits every event. It
- * can be used as either a Throttle or a Manifold Throttle.
+ * can be used as either a Throttle or an Extended Throttle. This is
+ * similar to the Desperado C++ class Throttle.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
  * @version $Revision$
  */
-public class PromiscuousThrottle implements ManifoldThrottle {
+public class PromiscuousThrottle implements ExtendedThrottle {
 	
 	/**
 	 * Ctor.
@@ -80,16 +81,21 @@ public class PromiscuousThrottle implements ManifoldThrottle {
 	 * @see com.diag.buckaroo.throttle.Throttle#isValid()
 	 */
 	public boolean isValid() { return true; }
+	
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#isApproximate()
+	 */
+	public boolean isApproximate() { return false; }
 
 	/* (non-Javadoc)
 	 * @see com.diag.buckaroo.throttle.Throttle#frequency()
 	 */
-	public long frequency() { return -1; }
+	public long frequency() { return 0; }
 
 	/* (non-Javadoc)
 	 * @see com.diag.buckaroo.throttle.Throttle#time()
 	 */
-	public long time() { return -1; }
+	public long time() { return 0; }
 
 	/* (non-Javadoc)
 	 * @see com.diag.buckaroo.throttle.Throttle#toString()
