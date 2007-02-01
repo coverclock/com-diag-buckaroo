@@ -202,8 +202,8 @@
 
 	<target name="dist" depends="backup, bin-jar, doc-zip"/>
 	
-	<target name="all" depends="dist, test"/>
+	<target name="prerelease" depends="dist, report"/>
 	
-	<target name="prerelease" depends="clean, dist, report"/>
+	<target name="all" depends="dist, test"/>
 
 </project>
