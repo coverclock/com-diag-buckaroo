@@ -23,11 +23,11 @@ import java.lang.Long;
 import java.util.Random;
 import junit.framework.TestCase;
 import com.diag.buckaroo.throttle.BandwidthAlgorithm;
-import com.diag.buckaroo.throttle.ManifoldThrottle;
+import com.diag.buckaroo.throttle.ExtendedThrottle;
 
 public class TestBandwidthAlgorithm extends TestCase {
 	
-	void validateInitialState(ManifoldThrottle ba) {
+	void validateInitialState(ExtendedThrottle ba) {
 		long ticks = 0;
 		assertNotNull(ba);
 		ba.reset(ticks);
@@ -66,7 +66,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 			Long.MAX_VALUE
 		};
 		
-		ManifoldThrottle ba = new BandwidthAlgorithm();
+		ExtendedThrottle ba = new BandwidthAlgorithm();
 		System.out.println("ba=" + ba);
 		validateInitialState(ba);
 		for (long increment : values) {
@@ -84,7 +84,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 	}
 	
 	public void test01Time() {
-		ManifoldThrottle ba = new BandwidthAlgorithm();
+		ExtendedThrottle ba = new BandwidthAlgorithm();
 		assertNotNull(ba);
 		long hz = ba.frequency();
 		assertEquals(hz, 1000000000L);
@@ -104,7 +104,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		long increment = 1000;
 		long limit = 250;
 		
-		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
+		ExtendedThrottle ba = new BandwidthAlgorithm(increment, limit);
 		assertNotNull(ba);
 		assertTrue(ba.isValid());
 		assertNotNull(ba.toString());
@@ -133,7 +133,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		
 	public void test04Reset() {
 		
-		ManifoldThrottle ba = new BandwidthAlgorithm(1, 0);
+		ExtendedThrottle ba = new BandwidthAlgorithm(1, 0);
 		assertNotNull(ba);
 		assertTrue(ba.isValid());
 		
@@ -159,7 +159,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 	
 	public void test05Increment() {
 		
-		ManifoldThrottle ba = new BandwidthAlgorithm(1, 0);
+		ExtendedThrottle ba = new BandwidthAlgorithm(1, 0);
 		assertNotNull(ba);
 		assertTrue(ba.isValid());
 		
@@ -195,7 +195,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 	
 	public void test06Increment() {
 		
-		ManifoldThrottle ba = new BandwidthAlgorithm(1000, 0);
+		ExtendedThrottle ba = new BandwidthAlgorithm(1000, 0);
 		assertNotNull(ba);
 		assertTrue(ba.isValid());
 		
@@ -231,7 +231,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 	
 	public void test07Limit() {
 		
-		ManifoldThrottle ba = new BandwidthAlgorithm(1000, 250);
+		ExtendedThrottle ba = new BandwidthAlgorithm(1000, 250);
 		assertNotNull(ba);
 		assertTrue(ba.isValid());
 		
@@ -380,7 +380,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		
 	}
 	
-	static double exercise(ManifoldThrottle ba, int bps, int maximum, int count) {
+	static double exercise(ExtendedThrottle ba, int bps, int maximum, int count) {
 		
 		long now = 0;
 		// Because the Throttle was constructed using the actual time, not simulated time.
@@ -469,7 +469,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		final int count = 10 * 1000; // Much larger and totticks overflows.
 		final long increment = (1000000000L + bps - 1) / bps;
 		final long limit = 0;
-		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
+		ExtendedThrottle ba = new BandwidthAlgorithm(increment, limit);
 		double bandwidth = exercise(ba, bps, maximum, count);
 		double accuracy = (Math.abs((double)bps - bandwidth) / (double)bps) * 100;
 		System.out.println("accuracy=" + accuracy);
@@ -482,7 +482,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		final int count = 100 * 1000; // Much larger and totticks overflows.
 		final long increment = (1000000000L + bps - 1) / bps;
 		final long limit = 0;
-		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
+		ExtendedThrottle ba = new BandwidthAlgorithm(increment, limit);
 		double bandwidth = exercise(ba, bps, maximum, count);
 		double accuracy = (Math.abs((double)bps - bandwidth) / (double)bps) * 100;
 		System.out.println("accuracy=" + accuracy);
@@ -495,7 +495,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		final int count = 10 * 1000 * 1000; // Much larger and totticks overflows.
 		final long increment = (1000000000L + bps - 1) / bps;
 		final long limit = 0;
-		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
+		ExtendedThrottle ba = new BandwidthAlgorithm(increment, limit);
 		double bandwidth = exercise(ba, bps, maximum, count);
 		double accuracy = (Math.abs((double)bps - bandwidth) / (double)bps) * 100;
 		System.out.println("accuracy=" + accuracy);
@@ -508,7 +508,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		final int count = 10 * 1000 * 1000;
 		final long increment = (1000000000L + bps - 1) / bps;
 		final long limit = 250000;
-		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
+		ExtendedThrottle ba = new BandwidthAlgorithm(increment, limit);
 		double bandwidth = exercise(ba, bps, maximum, count);
 		double accuracy = (Math.abs((double)bps - bandwidth) / (double)bps) * 100;
 		System.out.println("accuracy=" + accuracy);
@@ -521,7 +521,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		final int count = 10 * 1000 * 1000;
 		final long increment = (1000000000L + bps - 1) / bps;
 		final long limit = 250000;
-		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
+		ExtendedThrottle ba = new BandwidthAlgorithm(increment, limit);
 		double bandwidth = exercise(ba, bps, maximum, count);
 		double accuracy = (Math.abs((double)bps - bandwidth) / (double)bps) * 100;
 		System.out.println("accuracy=" + accuracy);
@@ -532,7 +532,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		
 		long increment = BandwidthAlgorithm.ms2increment(1000);
 		long limit = BandwidthAlgorithm.ms2limit(250);
-		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
+		ExtendedThrottle ba = new BandwidthAlgorithm(increment, limit);
 		System.out.println("ba=" + ba);
 		
 		long then = System.currentTimeMillis();
@@ -555,7 +555,7 @@ public class TestBandwidthAlgorithm extends TestCase {
 		
 		long increment = BandwidthAlgorithm.ns2increment(1000000000L);
 		long limit = BandwidthAlgorithm.ns2limit(250000000L);
-		ManifoldThrottle ba = new BandwidthAlgorithm(increment, limit);
+		ExtendedThrottle ba = new BandwidthAlgorithm(increment, limit);
 		System.out.println("ba=" + ba);
 		
 		long then = System.currentTimeMillis();
