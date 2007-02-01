@@ -20,7 +20,7 @@
 package com.diag.buckaroo.throttle;
 
 import junit.framework.TestCase;
-import com.diag.buckaroo.throttle.ManifoldThrottle;
+import com.diag.buckaroo.throttle.ExtendedThrottle;
 import com.diag.buckaroo.throttle.PromiscuousThrottle;
 import com.diag.buckaroo.throttle.Throttle;
 
@@ -38,12 +38,12 @@ public class TestPromiscuousThrottle extends TestCase {
 		Throttle pt = new PromiscuousThrottle();
 		assertNotNull(pt);
 		assertTrue(pt.isValid());
-		assertTrue(pt.frequency() < 0);
+		assertEquals(pt.frequency(), 0);
 		pt.time();
 	}
 
 	public void test02Admissibility() {
-		ManifoldThrottle pt = new PromiscuousThrottle();
+		ExtendedThrottle pt = new PromiscuousThrottle();
 		assertNotNull(pt);
 		assertTrue(pt.isValid());
 		assertEquals(pt.admissible(), 0);

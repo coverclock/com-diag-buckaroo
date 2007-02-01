@@ -47,7 +47,7 @@ public class TestGeometricThrottle extends TestCase {
 		assertNotNull(gt);
 		
 		assertTrue(gt.isValid());
-		assertTrue(gt.frequency() < 0);
+		assertEquals(gt.frequency(), 0);
 		gt.time();
 		
 	}

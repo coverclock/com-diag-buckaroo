@@ -23,12 +23,12 @@ import java.lang.Integer;
 
 import junit.framework.TestCase;
 import com.diag.buckaroo.throttle.BandwidthThrottle;
-import com.diag.buckaroo.throttle.ManifoldThrottle;
+import com.diag.buckaroo.throttle.ExtendedThrottle;
 import com.diag.buckaroo.throttle.TestBandwidthAlgorithm;
 
 public class TestBandwidthThrottle extends TestCase {
 	
-	void validateInitialState(ManifoldThrottle bt) {
+	void validateInitialState(ExtendedThrottle bt) {
 		long ticks = 0;
 		assertNotNull(bt);
 		bt.reset(ticks);
@@ -64,7 +64,7 @@ public class TestBandwidthThrottle extends TestCase {
 				Integer.MAX_VALUE
 		};
 		
-		ManifoldThrottle bt = new BandwidthThrottle();
+		ExtendedThrottle bt = new BandwidthThrottle();
 		System.out.println("bt=" + bt);
 		validateInitialState(bt);
 		for (int pbr : values) {
@@ -93,7 +93,7 @@ public class TestBandwidthThrottle extends TestCase {
 	}
 	
 	public void test01Time() {
-		ManifoldThrottle bt = new BandwidthThrottle();
+		ExtendedThrottle bt = new BandwidthThrottle();
 		assertNotNull(bt);
 		long hz = bt.frequency();
 		assertEquals(hz, 1000000000L);
@@ -110,7 +110,7 @@ public class TestBandwidthThrottle extends TestCase {
 	public void test02ConstantBitRate() {
 		int pbr = 1024;
 		int jt = 250000;
-		ManifoldThrottle bt = new BandwidthThrottle(pbr, jt);
+		ExtendedThrottle bt = new BandwidthThrottle(pbr, jt);
 		System.out.println("pbr=" + pbr + " jt=" + jt + " bt=" + bt);
 		assertTrue(bt.isValid());
 		validateInitialState(bt);
@@ -121,7 +121,7 @@ public class TestBandwidthThrottle extends TestCase {
 		int jt = 250000;
 		int sbr = 1024;
 		int mbs = 512;
-		ManifoldThrottle bt = new BandwidthThrottle(pbr, jt, sbr, mbs);
+		ExtendedThrottle bt = new BandwidthThrottle(pbr, jt, sbr, mbs);
 		System.out.println("pbr=" + pbr + " jt=" + jt + " sbr=" + sbr + " mbs=" + mbs + " bt=" + bt);
 		assertTrue(bt.isValid());
 		validateInitialState(bt);
@@ -203,7 +203,7 @@ public class TestBandwidthThrottle extends TestCase {
 	
 	public void test09Example1() {
 		final int pbr = 1;
-		ManifoldThrottle bt = new BandwidthThrottle(pbr);
+		ExtendedThrottle bt = new BandwidthThrottle(pbr);
 		System.out.println("bt=" + bt);
 		
 		long then = System.currentTimeMillis();
@@ -227,7 +227,7 @@ public class TestBandwidthThrottle extends TestCase {
 		final int jt = 250000;
 		final int sbr = 1;
 		final int mbs = 10;
-		ManifoldThrottle bt = new BandwidthThrottle(pbr, jt, sbr, mbs);
+		ExtendedThrottle bt = new BandwidthThrottle(pbr, jt, sbr, mbs);
 		System.out.println("bt=" + bt);
 		
 		long then = System.nanoTime();
