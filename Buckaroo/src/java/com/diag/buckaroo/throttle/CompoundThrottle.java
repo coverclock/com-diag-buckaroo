@@ -19,7 +19,7 @@
  */
 package com.diag.buckaroo.throttle;
 
-import com.diag.buckaroo.throttle.ManifoldThrottle;
+import com.diag.buckaroo.throttle.ExtendedThrottle;
 import com.diag.buckaroo.throttle.PromiscuousThrottle;
 import com.diag.buckaroo.throttle.Throttle;
 
@@ -30,7 +30,8 @@ import com.diag.buckaroo.throttle.Throttle;
  * implements a Constant Bit Rate (CBR) contract with just a peak Throttle,
  * and if two Throttles are used it implements a Variable Bit Rate (VBR)
  * contract with both a peak and a sustained sustained Throttle. A Compound
- * Throttle returns the frequency and time of the peak Throttle.
+ * Throttle returns the frequency and time of the peak Throttle. This is
+ * similar to the Desperado C++ class CompoundThrottle.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
@@ -38,7 +39,7 @@ import com.diag.buckaroo.throttle.Throttle;
  */
 public class CompoundThrottle implements Throttle {
 
-	protected static final ManifoldThrottle PROMISCUOUS = new PromiscuousThrottle();
+	protected static final ExtendedThrottle PROMISCUOUS = new PromiscuousThrottle();
 	
 	private Throttle peak;
 	private Throttle sustained;
@@ -126,6 +127,15 @@ public class CompoundThrottle implements Throttle {
 		boolean peakValid = peak.isValid();
 		boolean sustainedValid = sustained.isValid();
 		return peakValid && sustainedValid;
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#isApproximate()
+	 */
+	public boolean isApproximate() {
+		boolean peakApproximate = peak.isApproximate();
+		boolean sustainedApproximate = sustained.isApproximate();
+		return peakApproximate || sustainedApproximate;
 	}
 
 	/* (non-Javadoc)

@@ -22,7 +22,7 @@ package com.diag.buckaroo.throttle;
 import java.lang.Long;
 
 import com.diag.buckaroo.throttle.BandwidthAlgorithm;
-import com.diag.buckaroo.throttle.CompoundManifoldThrottle;
+import com.diag.buckaroo.throttle.CompoundExtendedThrottle;
 
 
 /**
@@ -44,16 +44,13 @@ import com.diag.buckaroo.throttle.CompoundManifoldThrottle;
  * For this reason, and because the entire packet is handed to the underlying platform for
  * transmission at its own rate, data streams rate controlled by this Throttle exhibit
  * burstier behavior than cell streams rate controlled by the similar CellRateThrottle.
- * Note that this is not a port of the Desperado C++ class BandwidthThrottle, and differs
- * substantially (its better) in both design and implementation from that class. Consider
- * the Desperado BandwidthThrottle class to be deprecated and expect a port of this class
- * from Java to C++ sometime in the future.
+ * This is similar to the Desperado C++ class BandwidthThrottle.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
  * @version $Revision$
  */
-public class BandwidthThrottle extends CompoundManifoldThrottle {
+public class BandwidthThrottle extends CompoundExtendedThrottle {
 
 	protected static final long FREQUENCY = new BandwidthAlgorithm().frequency();
 	

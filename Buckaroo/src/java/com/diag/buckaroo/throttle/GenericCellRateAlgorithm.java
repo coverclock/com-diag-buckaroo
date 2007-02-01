@@ -38,7 +38,8 @@ package com.diag.buckaroo.throttle;
  * (VBR) traffic contract based on PCR and CDVT plus the Sustainable Cell Rate (SCR) and the
  * Maximum Burst Size (MBS) would use two of these throttles in conjunction, the prior
  * throttle plus GenericCellRateAlgorithm(1/SCR, CDVT+((MBS-1)*((1/SCR)-(1/PCR)))) where
- * conforming cells would have to conform to both contracts simultaneously.
+ * conforming cells would have to conform to both contracts simultaneously. This is
+ * similar to the Desperado C++ class Gcra.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
@@ -125,15 +126,16 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 */
 	public static int delay2ns2(long us) { return ((int)(us % US_PER_MS)) * NS_PER_US; }
 
-	protected long now;			// time of the most recent attempted admission in ticks
-	protected long then;		// time of the most recent committed admission in ticks
-	protected long increment;	// increment in ticks [TM 4.0]
-	protected long limit;		// limit in ticks [TM 4.0]
-	protected long x;			// expected inter-arrival time in ticks [TM 4.0]
-	protected long x1;			// actual inter-arrival time in ticks [TM 4.0]
-	protected long x1maximum;	// maximum possible x1
-	protected boolean alarmed;	// alarm state
-	protected boolean alarmed1;	// candidate alarm state
+	protected long now;			   // time of the most recent attempted admission in ticks
+	protected long then;		   // time of the most recent committed admission in ticks
+	protected long increment;	   // increment in ticks [TM 4.0]
+	protected long limit;		   // limit in ticks [TM 4.0]
+	protected long x;			   // expected inter-arrival time in ticks [TM 4.0]
+	protected long x1;			   // actual inter-arrival time in ticks [TM 4.0]
+	protected long x1maximum;	   // maximum possible x1
+	protected boolean alarmed;	   // alarm state
+	protected boolean alarmed1;	   // candidate alarm state
+	protected boolean approximate; // event stream is out of specification
 	
 	/**
 	 * Ctor.
@@ -141,8 +143,18 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 * @param limit is the virtual scheduler limit or l in microseconds.
 	 */
 	public GenericCellRateAlgorithm(long increment, long limit) {
-		this.increment = (increment > 0) ? increment : 0;
-		this.limit = (limit > 0) ? limit : 0;
+		if (increment >= 0) {
+			this.increment = increment;
+		} else {
+			this.increment = 0;
+			this.approximate = true;
+		}
+		if (limit >= 0) {
+			this.limit = limit;
+		} else {
+			this.limit = 0;
+			this.approximate = true;
+		}
 		this.x1maximum = MAXIMUM_TICKS - this.increment;
 		reset();
 	}
@@ -180,6 +192,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 		then = ticks - increment;
 		alarmed = false;
 		alarmed1 = false;
+		approximate = false;
 	}
 
 	/* (non-Javadoc)
@@ -197,6 +210,10 @@ public class GenericCellRateAlgorithm implements Throttle {
 		alarmed1 = false;
 		now = ticks;
 		long elapsed = now - then;
+		if (elapsed < 0) {
+			elapsed = 0;
+			approximate = true;
+		}
 		if (x <= elapsed) {
 			x1 = 0;
 		} else {
@@ -217,6 +234,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 		then = now;
 		if (x1 > x1maximum) {
 			x = MAXIMUM_TICKS;
+			approximate = true;
 		} else {
 			x = x1 + increment;
 		}
@@ -243,6 +261,13 @@ public class GenericCellRateAlgorithm implements Throttle {
 	 */
 	public boolean isValid() {
 		return (x >= 0) && (x1 >= 0);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.diag.buckaroo.throttle.Throttle#isApproximate()
+	 */
+	public boolean isApproximate() {
+		return approximate;
 	}
 
 	/* (non-Javadoc)
@@ -273,6 +298,7 @@ public class GenericCellRateAlgorithm implements Throttle {
 			+ ",x1maximum=" + x1maximum
 			+ ",alarmed=" + alarmed
 			+ ",alarmed1=" + alarmed1
+			+ ",approximate=" + approximate
 			+ "}";
 	}
 }
