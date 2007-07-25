@@ -37,7 +37,7 @@ import com.diag.buckaroo.utility.Heap;
  */
 public class Platform extends LifeCycle implements PlatformMBean {
 	
-	private Class type;
+	private Class<?> type;
 	
 	/**
 	 * Ctor. The class instrumented by this managed bean is the class
@@ -61,7 +61,7 @@ public class Platform extends LifeCycle implements PlatformMBean {
 	 * specified.
 	 * @param type is the class.
 	 */
-	public Platform(Class type) {
+	public Platform(Class<?> type) {
 		this.type = type;
 	}
 	
