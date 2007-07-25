@@ -113,7 +113,7 @@ public class Parameters extends LifeCycle implements DynamicMBean {
 		Set<Map.Entry<Object,Object>> entries = properties.entrySet();
 		String stringName = String.class.getCanonicalName();
 		int ii = 0;
-		for (Map.Entry entry : entries) {
+		for (Map.Entry<Object,Object> entry : entries) {
 			Object key = entry.getKey();
 			Object value = entry.getValue();
 			if ((key instanceof String) && (value instanceof String)) {
@@ -124,7 +124,7 @@ public class Parameters extends LifeCycle implements DynamicMBean {
 		MBeanOperationInfo[] operations = new MBeanOperationInfo[3];
 		int index = 0;
 		try {
-			Class[] parameters = new Class[1];
+			Class<?>[] parameters = new Class[1];
 			parameters[0] = String.class;
 			Method method = Parameters.class.getDeclaredMethod(REMOVE, parameters);
 			operations[index++] = new MBeanOperationInfo(REMOVE, method);
@@ -132,7 +132,7 @@ public class Parameters extends LifeCycle implements DynamicMBean {
 			getLogger().log(Level.WARNING, exception.toString(), exception);
 		}
 		try {
-			Class[] parameters = new Class[2];
+			Class<?>[] parameters = new Class[2];
 			parameters[0] = String.class;
 			parameters[1] = String.class;
 			Method method = Parameters.class.getDeclaredMethod(SET, parameters);
@@ -141,7 +141,7 @@ public class Parameters extends LifeCycle implements DynamicMBean {
 			getLogger().log(Level.WARNING, exception.toString(), exception);
 		}
 		try {
-			Class[] parameters = new Class[1];
+			Class<?>[] parameters = new Class[1];
 			parameters[0] = String.class;
 			Method method = Parameters.class.getDeclaredMethod(GET, parameters);
 			operations[index++] = new MBeanOperationInfo(GET, method);

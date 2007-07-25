@@ -90,7 +90,7 @@ public class LifeCycle {
 	 * @return this object.
 	 * @throws MalformedObjectNameException 
 	 */
-	public LifeCycle setMBeanName(Class klass) throws MalformedObjectNameException {
+	public LifeCycle setMBeanName(Class<?> klass) throws MalformedObjectNameException {
 		String domain = klass.getPackage().getName();
 		String type = klass.getSimpleName();
 		String name = "0x" + Integer.toHexString(this.hashCode());
@@ -105,7 +105,7 @@ public class LifeCycle {
 	 * @return this object.
 	 */
 	public LifeCycle setMBeanName(Object object) throws MalformedObjectNameException {
-		Class klass = object.getClass();
+		Class<?> klass = object.getClass();
 		String domain = klass.getPackage().getName();
 		String type = klass.getSimpleName();
 		String name = "0x" + Integer.toHexString(object.hashCode());
@@ -120,7 +120,7 @@ public class LifeCycle {
 	 * @return this object.
 	 */
 	public LifeCycle setMBeanName(String string) throws MalformedObjectNameException {
-		Class klass = this.getClass();
+		Class<?> klass = this.getClass();
 		String domain = klass.getPackage().getName();
 		String type = klass.getSimpleName();
 		String name = string;
