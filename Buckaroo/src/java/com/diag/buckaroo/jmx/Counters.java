@@ -37,7 +37,7 @@ import com.diag.buckaroo.jmx.CallBack;
 
 /**
  * This class encapsulates an array of long integers that can be used
- * in an application as simple counters. The array is sized, labelled,
+ * in an application as simple counters. The array is sized, labeled,
  * and indexed solely by an enumeration provided at time of construction.
  * The array is exposed as a dynamic managed bean with each array position
  * an attribute named by its corresponding enumeration value. This class
@@ -198,8 +198,6 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	}
 	
 	// DynamicMBean Implementation
-	
-	// private <T extends Enum<T>> T valueOf(Class<T> enumType, String s)
 	
 	private int find1(String name) throws AttributeNotFoundException {
 		/*
