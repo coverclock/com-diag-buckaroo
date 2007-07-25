@@ -333,7 +333,7 @@ public class TestParameters extends TestCase {
 			System.out.println(string);
 		}
 		System.out.println("OBJECTNAMES:");
-		Set mbeans = server.queryNames(null, null);
+		Set<ObjectName> mbeans = server.queryNames(null, null);
 		assertNotNull(mbeans);
 		for (Object object : mbeans) {
 			assertTrue(object instanceof ObjectName);

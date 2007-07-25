@@ -99,9 +99,9 @@ public class TestCounters extends TestCase {
 	public void test02TypeSanity() {
 		try
 		{
-			Class type1 = Counter.class;
+			Class<?> type1 = Counter.class;
 			assertNotNull(type1);
-			Class<? extends Enum> type2 = Counter.class;
+			Class<? extends Enum<?>> type2 = Counter.class;
 			assertNotNull(type2);
 			Class<? extends Enum<Counter>> type3 = Counter.class;
 			assertNotNull(type3);
@@ -313,7 +313,7 @@ public class TestCounters extends TestCase {
 			System.out.println(string);
 		}
 		System.out.println("OBJECTNAMES:");
-		Set mbeans = server.queryNames(null, null);
+		Set<?> mbeans = server.queryNames(null, null);
 		assertNotNull(mbeans);
 		for (Object object : mbeans) {
 			assertTrue(object instanceof ObjectName);
