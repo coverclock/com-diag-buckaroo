@@ -1,5 +1,5 @@
 /**
- * Copyright 2006 Digital Aggregates Corp., Arvada CO 80001-0597, USA.
+ * Copyright 2006-2007 Digital Aggregates Corp., Arvada CO 80001-0597, USA.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	protected final static String RESET = "reset";
 	
 	private long[] counters;
-	private Class<? extends Enum<?>> type;
+	private Enum<?>[] constants;
 	private MBeanInfo info;
 	private volatile CallBack callback;
 
@@ -66,14 +66,13 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * array of counters.
 	 */
 	public Counters(Class<? extends Enum<?>> type) {
-		this.type = type;
-		Enum<? extends Enum<?>>[] constants = type.getEnumConstants();
+		constants = type.getEnumConstants();
 		counters = new long[constants.length];
 		MBeanAttributeInfo[] attributes = new MBeanAttributeInfo[constants.length];
 		String longName = Long.class.getCanonicalName();
 		for (int ii = 0; ii < attributes.length; ++ii) {
-			Enum<? extends Enum<?>> enumeration = constants[ii];
-			String name = enumeration.toString();
+			Enum<? extends Enum<?>> constant = constants[ii];
+			String name = constant.toString();
 			attributes[ii] = new MBeanAttributeInfo(name, longName, name, true, true, false);
 		}
 		MBeanOperationInfo[] operations = null;
@@ -204,16 +203,13 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	
 	private int find1(String name) throws AttributeNotFoundException {
 		/*
-		 * Ghod, whose is more stupid, me or the Java 6 Enum.valueOf()?
+		 * Ghod, who is more stupid, me or the Java 6 Enum.valueOf()?
 		 * I don't see how you can use Enum.valueOf() with a type known
 		 * only at run-time.
 		 */
-		Enum<?>[] constants = type.getEnumConstants();
-		if (constants != null) {
-			for (Enum<?> enumeration : constants) {
-				if (name.equals(enumeration.toString())) {
-					return enumeration.ordinal();
-				}
+		for (Enum<?> constant : constants) {
+			if (name.equals(constant.toString())) {
+				return constant.ordinal();
 			}
 		}
 		throw new AttributeNotFoundException(name);
@@ -294,24 +290,21 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	
 	public Object invoke(String actionName, Object[] params, String[] signature) throws MBeanException, ReflectionException {
 		if (actionName.equals(RESET)) {
-			Enum<?>[] constants = type.getEnumConstants();
-			if (constants != null) {
-				String[] names = new String[counters.length];
-				synchronized (this) {
-					for (Enum<?> constant : constants) {
-						int index = constant.ordinal();
-						long prior = counters[index];
-						counters[index] = 0;
-						if (prior != 0) {
-							names[index] = constant.toString();
-						}
+			String[] names = new String[counters.length];
+			synchronized (this) {
+				for (Enum<?> constant : constants) {
+					int index = constant.ordinal();
+					long prior = counters[index];
+					counters[index] = 0;
+					if (prior != 0) {
+						names[index] = constant.toString();
 					}
 				}
-				if (callback != null) {
-					for (String name : names) {
-						if (name != null) {
-							callback.callback(name);
-						}
+			}
+			if (callback != null) {
+				for (String name : names) {
+					if (name != null) {
+						callback.callback(name);
 					}
 				}
 			}
