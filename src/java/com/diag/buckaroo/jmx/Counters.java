@@ -56,7 +56,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	protected final static String RESET = "reset";
 	
 	private long[] counters;
-	private Class<? extends Enum> type;
+	private Class<? extends Enum<?>> type;
 	private MBeanInfo info;
 	private volatile CallBack callback;
 
@@ -65,22 +65,21 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param type is an enumerated type used to size, label and and index the
 	 * array of counters.
 	 */
-	public Counters(Class<? extends Enum> type) {
+	public Counters(Class<? extends Enum<?>> type) {
 		this.type = type;
-		Object[] constants = type.getEnumConstants();
+		Enum<? extends Enum<?>>[] constants = type.getEnumConstants();
 		counters = new long[constants.length];
 		MBeanAttributeInfo[] attributes = new MBeanAttributeInfo[constants.length];
 		String longName = Long.class.getCanonicalName();
 		for (int ii = 0; ii < attributes.length; ++ii) {
-			Enum enumeration = (Enum)constants[ii];
+			Enum<? extends Enum<?>> enumeration = constants[ii];
 			String name = enumeration.toString();
 			attributes[ii] = new MBeanAttributeInfo(name, longName, name, true, true, false);
 		}
 		MBeanOperationInfo[] operations = null;
 		try {
 			operations = new MBeanOperationInfo[1];
-			Class[] parameters = new Class[0];
-			Method method = this.getClass().getDeclaredMethod(RESET, parameters);
+			Method method = this.getClass().getDeclaredMethod(RESET);
 			operations[0] = new MBeanOperationInfo(RESET, method);
 		} catch (Exception exception) {
 			getLogger().log(Level.WARNING, exception.toString(), exception);
@@ -116,7 +115,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param value is the value to be added (may be negative).
 	 * @return the new value of the counter.
 	 */
-	public synchronized long add(Enum enumeration, long value) {
+	public synchronized long add(Enum<? extends Enum<?>> enumeration, long value) {
 		int index = enumeration.ordinal();
 		return counters[index] = counters[index] + value;
 	}
@@ -126,7 +125,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param enumeration identifies the counter.
 	 * @return the new value of the counter.
 	 */
-	public long inc(Enum enumeration) {
+	public long inc(Enum<? extends Enum<?>> enumeration) {
 		return add(enumeration, 1);
 	}
 	
@@ -135,7 +134,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param enumeration identifies the counter.
 	 * @return the new value of the counter.
 	 */
-	public long dec(Enum enumeration) {
+	public long dec(Enum<? extends Enum<?>> enumeration) {
 		return add(enumeration, -1);
 	}
 	
@@ -145,7 +144,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param value is the new vlaue.
 	 * @return the new value of the counter.
 	 */
-	public synchronized long min(Enum enumeration, long value) {
+	public synchronized long min(Enum<? extends Enum<?>> enumeration, long value) {
 		int index = enumeration.ordinal();
 		if (value < counters[index]) { counters[index] = value; }
 		return counters[index];
@@ -157,7 +156,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param value is the new value.
 	 * @return the new value of the counter.
 	 */
-	public synchronized long max(Enum enumeration, long value) {
+	public synchronized long max(Enum<? extends Enum<?>> enumeration, long value) {
 		int index = enumeration.ordinal();
 		if (value > counters[index]) { counters[index] = value; }
 		return counters[index];
@@ -169,7 +168,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param value is the new value.
 	 * @return the new value of the counter.
 	 */
-	public synchronized long set(Enum enumeration, long value) {
+	public synchronized long set(Enum<? extends Enum<?>> enumeration, long value) {
 		return counters[enumeration.ordinal()] = value;
 	}
 	
@@ -178,7 +177,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param enumeration identifies a counter.
 	 * @return the value of the counter.
 	 */
-	public synchronized long get(Enum enumeration) {
+	public synchronized long get(Enum<? extends Enum<?>> enumeration) {
 		return counters[enumeration.ordinal()];
 	}
 	
@@ -187,7 +186,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param enumeration identifies the counter.
 	 * @return the new value of the counter.
 	 */
-	public long clear(Enum enumeration) {
+	public long clear(Enum<? extends Enum<?>> enumeration) {
 		return set(enumeration, 0);
 	}
 	
@@ -200,20 +199,24 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	}
 	
 	// DynamicMBean Implementation
-
-	@SuppressWarnings("unchecked") // It kills me but I've spent way too much time on this.
+	
+	// private <T extends Enum<T>> T valueOf(Class<T> enumType, String s)
+	
 	private int find1(String name) throws AttributeNotFoundException {
-		int index;
-		try {
-			// Enum<E extends Enum<E>>
-			// public static <T extends Enum<T>> T valueOf(Class<T> enumType, String name)
-			// TODO Figure out how the heck to get rid of the unchecked warning.
-			Enum enumeration = Enum.valueOf(type, name);
-			index = enumeration.ordinal();
-		} catch (Exception exception) {
-			throw new AttributeNotFoundException(name);
+		/*
+		 * Ghod, whose is more stupid, me or the Java 6 Enum.valueOf()?
+		 * I don't see how you can use Enum.valueOf() with a type known
+		 * only at run-time.
+		 */
+		Enum<?>[] constants = type.getEnumConstants();
+		if (constants != null) {
+			for (Enum<?> enumeration : constants) {
+				if (name.equals(enumeration.toString())) {
+					return enumeration.ordinal();
+				}
+			}
 		}
-		return index;
+		throw new AttributeNotFoundException(name);
 	}
 	
 	private int find2(String name) {
@@ -291,21 +294,24 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	
 	public Object invoke(String actionName, Object[] params, String[] signature) throws MBeanException, ReflectionException {
 		if (actionName.equals(RESET)) {
-			Object[] constants = type.getEnumConstants();
-			String[] names = new String[counters.length];
-			synchronized (this) {
-				for (Object constant : constants) {
-					Enum enumeration = (Enum)constant;
-					int index = enumeration.ordinal();
-					long prior = counters[index];
-					counters[index] = 0;
-					if (prior != 0) { names[index] = enumeration.toString(); }
+			Enum<?>[] constants = type.getEnumConstants();
+			if (constants != null) {
+				String[] names = new String[counters.length];
+				synchronized (this) {
+					for (Enum<?> constant : constants) {
+						int index = constant.ordinal();
+						long prior = counters[index];
+						counters[index] = 0;
+						if (prior != 0) {
+							names[index] = constant.toString();
+						}
+					}
 				}
-			}
-			if (callback != null) {
-				for (String name : names) {
-					if (name != null) {
-						callback.callback(name);
+				if (callback != null) {
+					for (String name : names) {
+						if (name != null) {
+							callback.callback(name);
+						}
 					}
 				}
 			}
