@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.junit.launchconfig">
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-<listEntry value="/Buckaroo/test/java/com/diag/buckaroo/jmx/TestLifeCycle.java"/>
+<listEntry value="/Buckaroo/test/java/com/diag/buckaroo/jmx/TestParameters.java"/>
 </listAttribute>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
 <listEntry value="1"/>
@@ -11,7 +11,7 @@
 <booleanAttribute key="org.eclipse.jdt.junit.KEEPRUNNING_ATTR" value="false"/>
 <stringAttribute key="org.eclipse.jdt.junit.TESTNAME" value=""/>
 <stringAttribute key="org.eclipse.jdt.junit.TEST_KIND" value="org.eclipse.jdt.junit.loader.junit4"/>
-<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.diag.buckaroo.jmx.TestLifeCycle"/>
+<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.diag.buckaroo.jmx.TestParameters"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Buckaroo"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea -Dcom.sun.management.jmxremote"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-enableassertions&#13;&#10;-Dcom.sun.management.jmxremote&#13;&#10;-DTestParameters=60000"/>
 </launchConfiguration>
