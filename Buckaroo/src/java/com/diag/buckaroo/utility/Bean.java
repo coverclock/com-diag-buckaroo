@@ -42,7 +42,7 @@ public class Bean {
 	 */
 	public static String toString(Object object) {
 		StringBuffer buffer = new StringBuffer(64);
-		Class type = object.getClass();
+		Class<?> type = object.getClass();
 		buffer.append('{');
 		Method[] methods = type.getMethods();
 		int count = 0;

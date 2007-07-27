@@ -60,7 +60,7 @@ public class Discovery {
 	 * @param klass is the class.
 	 * @return a String or null if it cannot be determined.
 	 */
-	public static String getClassFilePath(Class klass) {
+	public static String getClassFilePath(Class<?> klass) {
 		String path = null;
 		do {
 			String name = klass.getName().replace('.', '/') + ".class";
@@ -142,7 +142,7 @@ public class Discovery {
 	 * @param klass is the class.
 	 * @return a Date or null if it cannot be determined.
 	 */
-	public static Date getClassCompilationDate(Class klass) {
+	public static Date getClassCompilationDate(Class<?> klass) {
 		Date date = null;
 		do {
 			String name = klass.getName().replace('.', '/') + ".class";
@@ -190,7 +190,7 @@ public class Discovery {
 	 * @param klass is the class.
 	 * @return a ClassLoader; if it cannot be determined, the system class loader is returned.
 	 */
-	public static ClassLoader getClassLoader(Class klass) {
+	public static ClassLoader getClassLoader(Class<?> klass) {
 		ClassLoader loader = null;
 		if (klass != null) { loader = klass.getClassLoader(); }
 		if (loader == null) { loader = ClassLoader.getSystemClassLoader(); }
@@ -203,7 +203,7 @@ public class Discovery {
 	 * @return a ClassLoader; if it cannot be determined, the system class loader is returned.
 	 */
 	public static ClassLoader getClassLoader(Object object) {
-		return getClassLoader((object != null) ? object.getClass() : (Class)null);
+		return getClassLoader((object != null) ? object.getClass() : (Class<?>)null);
 	}
 	
 	/**
