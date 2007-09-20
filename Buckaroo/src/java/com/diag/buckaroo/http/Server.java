@@ -40,6 +40,7 @@ public class Server {
 
 	private Logger log = DEFAULT_LOGGER;
 	private int port = 80;
+	private String root = "";
 	private boolean enabled = false;
 	private Listener listener = null;
 	
@@ -54,6 +55,8 @@ public class Server {
 		JPG,
 		GIF,
 		ZIP,
+		PDF,
+		TXT,
 		HTML
 	}
 	
@@ -154,6 +157,24 @@ public class Server {
 	}
 	
 	/**
+	 * Returns the path root used by this Server.
+	 * @return the path root.
+	 */
+	public String getRoot() {
+		return root;
+	}
+	
+	/**
+	 * Sets the path prefix used by this Server.
+	 * @param port is a path prefix.
+	 * @return this object.
+	 */
+	public Server setRoot(String root) {
+		this.root = root;
+		return this;
+	}
+	
+	/**
 	 * Starts this HTTP server.
 	 * @return this object.
 	 */
@@ -232,7 +253,7 @@ public class Server {
 					start = a;
 				}
 			}
-			path = tmp2.substring(start + 2, end);
+			path = root + tmp2.substring(start + 2, end);
 		} catch (Exception exception) {
 			getLogger().log(Level.WARNING, exception.toString(), exception);
 		}
@@ -256,6 +277,10 @@ public class Server {
 				type = Type.GIF;
 			} else if (path.endsWith(".zip") || path.endsWith(".exe") || path.endsWith(".tar")) {
 				type = Type.ZIP;
+			} else if (path.endsWith(".pdf")) {
+				type = Type.PDF;
+			} else if (path.endsWith(".txt")) {
+				type = Type.TXT;
 			} else {
 				type = Type.HTML;
 			}
@@ -316,6 +341,10 @@ public class Server {
 			s = s + "Content-Type: image/gif\r\n";
 		} else if (type == Type.ZIP) {
 			s = s + "Content-Type: application/x-zip-compressed\r\n";
+		} else if (type == Type.PDF) {
+			s = s + "Content-Type: application/pdf\r\n";
+		} else if (type == Type.TXT) {
+			s = s + "Content-Type: text/plain\r\n";
 		} else if (type == Type.HTML) {
 			s = s + "Content-Type: text/html\r\n";
 		}
@@ -323,5 +352,27 @@ public class Server {
 		s = s + "\r\n";
 
 		return s;
+	}
+	
+	/**
+	 * This is a main so that a server can be invoked from the command line.
+	 * The first optional positional argument is the path prefix to use,
+	 * the defaulting being "".
+	 * The second optional positional argument is the number of milliseconds to
+	 * run, the default being 60000.
+	 * The third optional positional argument is the port to use, the default
+	 * being 80.
+	 * @param args is the argument array.
+	 */
+	public static void main(String args[]) {
+		String prefix = (args.length > 0) ? args[0] : "";
+		long delay = (args.length > 1) ? Long.parseLong(args[1]) : 60000;
+		int port = (args.length > 2) ? Integer.parseInt(args[2]) : 80;
+		Server server = new Server();
+		server.setRoot(prefix);
+		server.setPort(port);
+		server.start();
+		try { Thread.sleep(delay); } catch (Exception interrupted) {}
+		server.stop();
 	}
 }
