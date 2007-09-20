@@ -21,12 +21,8 @@ package com.diag.buckaroo.http;
 
 import java.io.*;
 import java.net.*;
-import java.text.DateFormat;
-import java.util.Date;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-
-import com.diag.buckaroo.jmx.LifeCycle;
 
 /**
  * This class implements a simple single threader (and unsecure) HTTP server
@@ -38,25 +34,92 @@ import com.diag.buckaroo.jmx.LifeCycle;
  *
  * @version $Revision$
  */
-public class Server extends Thread {
+public class Server {
 
 	protected static final Logger DEFAULT_LOGGER = Logger.getLogger(Server.class.getName());
 
 	private Logger log = DEFAULT_LOGGER;
-	private int port;
+	private int port = 80;
+	private boolean enabled = false;
+	private Listener listener = null;
+	
+	enum Method {
+		UNSUPPORTED,
+		GET,
+		HEAD
+	}
 
-	/**
-	 * Constructor.
-	 * @param port
-	 */
-	public Server(int port) {
-		this.port = port;
-		this.start();
+	enum Type {
+		UNSUPPORTED,
+		JPG,
+		GIF,
+		ZIP,
+		HTML
 	}
 	
 	/**
-	 * Set the Java logger used by the Server.
-	 * @param log is a java logger.
+	 * Defines the listener thread that waits for incoming HTTP requests.
+	 */
+	public class Listener extends Thread {	
+		
+		/**
+		 * Implements listener thread body.
+		 */
+		public void run() {
+			getLogger().fine("Running.");
+			
+			ServerSocket listensocket = null;
+			
+			try {
+				getLogger().fine("Binding " + port + ".");
+				listensocket = new ServerSocket(port);
+			} catch (Exception exception) {
+				getLogger().log(Level.WARNING, exception.toString(), exception);
+				return;
+			}
+
+			while (enabled) {
+				getLogger().fine("Listening.");
+				try {
+					Socket connectionsocket = listensocket.accept();
+					InetAddress client = connectionsocket.getInetAddress();
+					getLogger().fine("Connected " + client.getHostName() + ".");
+					BufferedReader input = new BufferedReader(new InputStreamReader(connectionsocket.getInputStream()));
+					DataOutputStream output = new DataOutputStream(connectionsocket.getOutputStream());
+					http(input, output);
+					input.close();
+					output.close();
+					connectionsocket.close();
+				} catch (Exception exception) {
+					getLogger().log(Level.WARNING, exception.toString(), exception);
+				}
+			}
+			
+			try {
+				listensocket.close();
+			} catch (Exception exception) {
+				getLogger().log(Level.WARNING, exception.toString(), exception);
+			}
+		}
+		
+	}
+	
+	/**
+	 * Constructor.
+	 */
+	public Server() {}
+	
+	/**
+	 * Constructor.
+	 * @param port is an HTTP listening port.
+	 */
+	public Server(int port) {
+		this.port = port;
+	}
+	
+	/**
+	 * Set the Java logger used by this Server.
+	 * @param log is a Java logger.
 	 * @return this object.
 	 */
 	public Server setLogger(Logger log) {
@@ -65,47 +128,71 @@ public class Server extends Thread {
 	}
 	
 	/**
-	 * Get the Java logger used by the Server.
-	 * @return a java logger.
+	 * Get the Java logger used by this Server.
+	 * @return a Java logger.
 	 */
 	public Logger getLogger() {
 		return log;
 	}
-
-	public void run() {
-		ServerSocket serversocket = null;
-		getLogger().fine("The simple httpserver v. 0000000000\nCoded by Jon Berg" + "<jon.berg[on server]turtlemeat.com>\n\n");
-		try {
-			getLogger().fine("Trying to bind to localhost on port " + Integer.toString(port) + "...");
-			serversocket = new ServerSocket(port);
-		} catch (Exception e) {
-			getLogger().fine("\nFatal Error:" + e.getMessage());
-			return;
+	
+	/**
+	 * Returns the HTTP listening port used by this Server.
+	 * @return the HTTP listening port.
+	 */
+	public int getPort() {
+		return port;
+	}
+	
+	/**
+	 * Sets the HTTP listening port used by this Server prior to being started.
+	 * @param port is an HTTP listening port.
+	 * @return this object.
+	 */
+	public Server setPort(int port) {
+		this.port = port;
+		return this;
+	}
+	
+	/**
+	 * Starts this HTTP server.
+	 * @return this object.
+	 */
+	public Server start() {
+		if (listener == null)
+		{
+			enabled = true;
+			listener = new Listener();
+			listener.start();
 		}
-
-		getLogger().fine("OK!\n");
-
-		while (true) {
-			getLogger().fine("\nReady, Waiting for requests...\n");
+		return this;
+	}
+	
+	/**
+	 * Stops this HTTP server.
+	 * @return this object.
+	 */
+	public Server stop() {
+		if (listener != null) {
+			enabled = false;
 			try {
-				Socket connectionsocket = serversocket.accept();
-				InetAddress client = connectionsocket.getInetAddress();
-				getLogger().fine(client.getHostName() + " connected to server.\n");
-				BufferedReader input = new BufferedReader(new InputStreamReader(connectionsocket.getInputStream()));
-				DataOutputStream output = new DataOutputStream(connectionsocket.getOutputStream());
-				http(input, output);
-			} catch (Exception e) {
-				getLogger().fine("\nError:" + e.getMessage());
+				listener.join(1000);
+			} catch (Exception exception) {
+				getLogger().log(Level.WARNING, exception.toString(), exception);
 			}
+			listener = null;
 		}
+		return this;
 	}
 
-	private void http(BufferedReader input, DataOutputStream output) {
-		int method = 0; //1 get, 2 head, 0 not supported
-		String http = new String();
+	/**
+	 * Services a single HTTP request.
+	 * @param input is the HTTP input stream.
+	 * @param output is the HTTP output stream.
+	 */
+	protected void http(BufferedReader input, DataOutputStream output) {
+		Method method = Method.UNSUPPORTED;
 		String path = new String();
-		String file = new String();
-		String user_agent = new String();
+		
 		try {
 			//This is the two types of request we can handle
 			//GET /index.html HTTP/1.0
@@ -114,20 +201,19 @@ public class Server extends Thread {
 			String tmp2 = new String(tmp);
 			tmp.toUpperCase();
 			if (tmp.startsWith("GET")) {
-				method = 1;
+				method = Method.GET;
 			} else if (tmp.startsWith("HEAD")) {
-				method = 2;
+				method = Method.HEAD;
 			} else {
-				method = 0;
+				method = Method.UNSUPPORTED;
 			}
 
-			if (method == 0) {
+			if (method == Method.UNSUPPORTED) {
 				try {
-					output.writeBytes(header(501, 0));
-					output.close();
+					output.writeBytes(header(501, Type.UNSUPPORTED));
 					return;
-				} catch (Exception e3) {
-					getLogger().fine("error:" + e3.getMessage());
+				} catch (Exception exception) {
+					getLogger().log(Level.WARNING, exception.toString(), exception);
 				}
 			}
 
@@ -147,57 +233,58 @@ public class Server extends Thread {
 				}
 			}
 			path = tmp2.substring(start + 2, end);
-		} catch (Exception e) {
-			getLogger().fine("error " + e.getMessage());
+		} catch (Exception exception) {
+			getLogger().log(Level.WARNING, exception.toString(), exception);
 		}
 
-		getLogger().fine("\nClient requested:" + new File(path).getAbsolutePath() + "\n");
-		FileInputStream requestedfile = null;
-
+		getLogger().fine("Requested \"" + new File(path).getAbsolutePath() + "\".");
+		FileInputStream requested = null;
 		try {
-			requestedfile = new FileInputStream(path);
-		} catch (Exception e) {
+			requested = new FileInputStream(path);
+		} catch (Exception exception) {
 			try {
-				output.writeBytes(header(404, 0));
-				output.close();
-			} catch (Exception e2) {}
-			getLogger().fine("error " + e.getMessage());
+				output.writeBytes(header(404, Type.UNSUPPORTED));
+			} catch (Exception ignored) {}
+			getLogger().log(Level.WARNING, exception.toString(), exception);
 		}
 
 		try {
-			int type_is;
-			if (path.endsWith(".zip") || path.endsWith(".exe") || path.endsWith(".tar")) {
-				type_is = 3;
-			} else if (path.endsWith(".jpg") || path.endsWith(".jpeg")) {
-				type_is = 1;
+			Type type = Type.UNSUPPORTED;
+			if (path.endsWith(".jpg") || path.endsWith(".jpeg")) {
+				type = Type.JPG;
 			} else if (path.endsWith(".gif")) {
-				type_is = 2;
+				type = Type.GIF;
+			} else if (path.endsWith(".zip") || path.endsWith(".exe") || path.endsWith(".tar")) {
+				type = Type.ZIP;
 			} else {
-				type_is = 0;
+				type = Type.HTML;
 			}
-			output.writeBytes(header(200, 5));
+			output.writeBytes(header(200, type));
 
-			// 1 is GET, 2 is HEAD which skips the body.
-			if (method == 1) {
+			if (method == Method.GET) {
 				while (true) {
-					int b = requestedfile.read();
+					int b = requested.read();
 					if (b == -1) {
-						break; //end of file
+						break;
 					}
 					output.write(b);
 				}
 			}
 
-			output.close();
-			requestedfile.close();
-		}
-
-		catch (Exception e) {}
+			requested.close();
+		} catch (Exception ignored) {}
 
 	}
 
-	private String header(int code, int type) {
+	/**
+	 * Generates an appropriate HTTP header for the output data stream.
+	 * @param code is the HTTP return code.
+	 * @param type is the type of data being returned.
+	 * @return
+	 */
+	protected String header(int code, Type type) {
 		String s = "HTTP/1.0 ";
+		
 		switch (code) {
 		case 200:
 			s = s + "200 OK";
@@ -221,21 +308,16 @@ public class Server extends Thread {
 
 		s = s + "\r\n";
 		s = s + "Connection: close\r\n";
-		s = s + "Server: SimpleHTTPtutorial v0\r\n";
+		s = s + "Server: " + Server.class.getName() + "\r\n";
 
-		switch (type) {
-		case 0:
-			break;
-		case 1:
+		if (type == Type.JPG) {
 			s = s + "Content-Type: image/jpeg\r\n";
-			break;
-		case 2:
+		} else if (type == Type.GIF) {
 			s = s + "Content-Type: image/gif\r\n";
-		case 3:
+		} else if (type == Type.ZIP) {
 			s = s + "Content-Type: application/x-zip-compressed\r\n";
-		default:
+		} else if (type == Type.HTML) {
 			s = s + "Content-Type: text/html\r\n";
-		break;
 		}
 
 		s = s + "\r\n";
