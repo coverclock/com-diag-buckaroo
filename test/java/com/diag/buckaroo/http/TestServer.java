@@ -31,13 +31,19 @@ public class TestServer {
 		Server server = new Server();
 		assertNotNull(server);
 		assertEquals(server.getPort(), 80);
+		assertEquals(server.getRoot(), "");
 	}
 
 	@Test
 	public void test01() {
-		Server server = new Server(8080);
+		Server server = new Server();
 		assertNotNull(server);
+		Server server0 = server.setPort(8080);
+		assertEquals(server, server0);
 		assertEquals(server.getPort(), 8080);
+		Server server1 = server.setRoot("/Users/jsloan/Desktop/Home/www/");
+		assertEquals(server, server1);
+		assertEquals(server.getRoot(),"/Users/jsloan/Desktop/Home/www/");
 	}
 
 	@Test
@@ -53,6 +59,8 @@ public class TestServer {
 
 	@Test
 	public void test03() {
+		String value = System.getProperty(this.getClass().getSimpleName());
+		long delay = (value != null) ? Long.parseLong(value) : 60000;
 		Server server = new Server();
 		assertNotNull(server);
 		Logger log = server.getLogger();
@@ -61,10 +69,9 @@ public class TestServer {
 		assertEquals(server.getPort(), 80);
 		Server server0 = server.start();
 		assertEquals(server, server0);
-		try { Thread.sleep(60 * 1000); } catch (Exception interrupted) {}
+		try { Thread.sleep(delay); } catch (Exception interrupted) {}
 		Server server1 = server.stop();
 		assertEquals(server, server1);
-		try { Thread.sleep(1000); } catch (Exception interrupted) {}
 	}
 
 	
