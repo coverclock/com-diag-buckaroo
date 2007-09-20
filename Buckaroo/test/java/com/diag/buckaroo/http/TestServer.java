@@ -20,21 +20,52 @@
 package com.diag.buckaroo.http;
 
 import static org.junit.Assert.*;
-
 import org.junit.Test;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 
 public class TestServer {
 
 	@Test
-	public void test00Server() {
+	public void test00() {
 		Server server = new Server();
-		assertTrue(server != null);
+		assertNotNull(server);
+		assertEquals(server.getPort(), 80);
+	}
+
+	@Test
+	public void test01() {
+		Server server = new Server(8080);
+		assertNotNull(server);
+		assertEquals(server.getPort(), 8080);
+	}
+
+	@Test
+	public void test02() {
+		Server server = new Server();
+		assertNotNull(server);
+		assertEquals(server.getPort(), 80);
 		Server server0 = server.start();
 		assertEquals(server, server0);
-		try { Thread.sleep(5 * 60 * 1000); } catch (Exception interrupted) {}
+		Server server1 = server.stop();
+		assertEquals(server, server1);
+	}
+
+	@Test
+	public void test03() {
+		Server server = new Server();
+		assertNotNull(server);
+		Logger log = server.getLogger();
+		assertNotNull(log);
+		log.setLevel(Level.ALL);
+		assertEquals(server.getPort(), 80);
+		Server server0 = server.start();
+		assertEquals(server, server0);
+		try { Thread.sleep(60 * 1000); } catch (Exception interrupted) {}
 		Server server1 = server.stop();
 		assertEquals(server, server1);
 		try { Thread.sleep(1000); } catch (Exception interrupted) {}
 	}
 
+	
 }
