@@ -23,6 +23,8 @@ import java.io.*;
 import java.net.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.util.ResourceBundle;
+import java.util.Enumeration;
 
 /**
  * This class implements a simple single threader (and unsecure) HTTP server
@@ -36,30 +38,17 @@ import java.util.logging.Level;
  */
 public class Server {
 
-	protected static final Logger DEFAULT_LOGGER = Logger.getLogger(Server.class.getName());
-
-	private Logger log = DEFAULT_LOGGER;
 	private int port = 80;
-	private String root = "";
+	private String root = null;
 	private boolean enabled = false;
 	private Listener listener = null;
+	private ResourceBundle bundle = null;
 	
-	enum Method {
-		UNSUPPORTED,
-		GET,
-		HEAD
-	}
+	// I use this instead of a Enum to make it easier to port to 1.4 for CVM.
+	static int	UNSUPPORTED = 0,
+				GET = 1,
+				HEAD = 2;
 
-	enum Type {
-		UNSUPPORTED,
-		JPG,
-		GIF,
-		ZIP,
-		PDF,
-		TXT,
-		HTML
-	}
-	
 	/**
 	 * Defines the listener thread that waits for incoming HTTP requests.
 	 */
@@ -69,24 +58,24 @@ public class Server {
 		 * Implements listener thread body.
 		 */
 		public void run() {
-			getLogger().fine("Running.");
+			log("Running.");
 			
 			ServerSocket listensocket = null;
 			
 			try {
-				getLogger().fine("Binding " + port + ".");
+				log("Binding " + port + ".");
 				listensocket = new ServerSocket(port);
 			} catch (Exception exception) {
-				getLogger().log(Level.WARNING, exception.toString(), exception);
+				log(exception);
 				return;
 			}
 
 			while (enabled) {
-				getLogger().fine("Listening.");
+				log("Listening.");
 				try {
 					Socket connectionsocket = listensocket.accept();
 					InetAddress client = connectionsocket.getInetAddress();
-					getLogger().fine("Connected " + client.getHostName() + ".");
+					log("Connected " + client.getHostName() + ".");
 					BufferedReader input = new BufferedReader(new InputStreamReader(connectionsocket.getInputStream()));
 					DataOutputStream output = new DataOutputStream(connectionsocket.getOutputStream());
 					http(input, output);
@@ -94,14 +83,14 @@ public class Server {
 					output.close();
 					connectionsocket.close();
 				} catch (Exception exception) {
-					getLogger().log(Level.WARNING, exception.toString(), exception);
+					log(exception);
 				}
 			}
 			
 			try {
 				listensocket.close();
 			} catch (Exception exception) {
-				getLogger().log(Level.WARNING, exception.toString(), exception);
+				log(exception);
 			}
 		}
 		
@@ -112,13 +101,8 @@ public class Server {
 	 */
 	public Server() {}
 	
-	/**
-	 * Constructor.
-	 * @param port is an HTTP listening port.
-	 */
-	public Server(int port) {
-		this.port = port;
-	}
+	protected static final Logger DEFAULT_LOGGER = Logger.getLogger(Server.class.getName());
+	private Logger log = DEFAULT_LOGGER;
 	
 	/**
 	 * Set the Java logger used by this Server.
@@ -136,6 +120,24 @@ public class Server {
 	 */
 	public Logger getLogger() {
 		return log;
+	}
+	
+	/**
+	 * Log a string as info.
+	 * @param string is the string to log.
+	 */
+	protected void log(String string) {
+		System.out.println(string); System.out.flush();
+		getLogger().fine(string);
+	}
+	
+	/**
+	 * Log an exception as a warning.
+	 * @param exception is the exception to log.
+	 */
+	protected void log(Exception exception) {
+		System.err.println(exception.toString()); System.err.flush();
+		getLogger().log(Level.WARNING, exception.toString(), exception);
 	}
 	
 	/**
@@ -178,9 +180,10 @@ public class Server {
 	 * Starts this HTTP server.
 	 * @return this object.
 	 */
-	public Server start() {
+	public synchronized Server start() {
 		if (listener == null)
 		{
+			bundle = ResourceBundle.getBundle(this.getClass().getPackage().getName() + ".mime");
 			enabled = true;
 			listener = new Listener();
 			listener.start();
@@ -192,13 +195,15 @@ public class Server {
 	 * Stops this HTTP server.
 	 * @return this object.
 	 */
-	public Server stop() {
+	public synchronized Server stop() {
 		if (listener != null) {
 			enabled = false;
+			listener.interrupt();
 			try {
-				listener.join(1000);
+				listener.join(5000);
 			} catch (Exception exception) {
-				getLogger().log(Level.WARNING, exception.toString(), exception);
+				log(exception);
+				return null;
 			}
 			listener = null;
 		}
@@ -211,31 +216,29 @@ public class Server {
 	 * @param output is the HTTP output stream.
 	 */
 	protected void http(BufferedReader input, DataOutputStream output) {
-		Method method = Method.UNSUPPORTED;
-		String path = new String();
+		int method = UNSUPPORTED;
+		String path = null;
 		
 		try {
+		
 			//This is the two types of request we can handle
 			//GET /index.html HTTP/1.0
 			//HEAD /index.html HTTP/1.0
 			String tmp = input.readLine();
+			log(tmp);
 			String tmp2 = new String(tmp);
 			tmp.toUpperCase();
 			if (tmp.startsWith("GET")) {
-				method = Method.GET;
+				method = GET;
 			} else if (tmp.startsWith("HEAD")) {
-				method = Method.HEAD;
+				method = HEAD;
 			} else {
-				method = Method.UNSUPPORTED;
+				method = UNSUPPORTED;
 			}
 
-			if (method == Method.UNSUPPORTED) {
-				try {
-					output.writeBytes(header(501, Type.UNSUPPORTED));
-					return;
-				} catch (Exception exception) {
-					getLogger().log(Level.WARNING, exception.toString(), exception);
-				}
+			if (method == UNSUPPORTED) {
+				output.writeBytes(header(501, null));
+				return;
 			}
 
 			// Given "GET /index.html HTTP/1.0 ......."
@@ -253,52 +256,61 @@ public class Server {
 					start = a;
 				}
 			}
-			path = root + tmp2.substring(start + 2, end);
-		} catch (Exception exception) {
-			getLogger().log(Level.WARNING, exception.toString(), exception);
-		}
-
-		getLogger().fine("Requested \"" + new File(path).getAbsolutePath() + "\".");
-		FileInputStream requested = null;
-		try {
-			requested = new FileInputStream(path);
-		} catch (Exception exception) {
-			try {
-				output.writeBytes(header(404, Type.UNSUPPORTED));
-			} catch (Exception ignored) {}
-			getLogger().log(Level.WARNING, exception.toString(), exception);
-		}
-
-		try {
-			Type type = Type.UNSUPPORTED;
-			if (path.endsWith(".jpg") || path.endsWith(".jpeg")) {
-				type = Type.JPG;
-			} else if (path.endsWith(".gif")) {
-				type = Type.GIF;
-			} else if (path.endsWith(".zip") || path.endsWith(".exe") || path.endsWith(".tar")) {
-				type = Type.ZIP;
-			} else if (path.endsWith(".pdf")) {
-				type = Type.PDF;
-			} else if (path.endsWith(".txt")) {
-				type = Type.TXT;
-			} else {
-				type = Type.HTML;
+			path = tmp2.substring(start + 2, end);
+			
+			log(path);
+			
+			if (root != null) {
+				path = root + path;
+				log(path);
 			}
-			output.writeBytes(header(200, type));
+			
+			FileInputStream requested = null;
+			try {
+				requested = new FileInputStream(path);
+			} catch (Exception exception) {
+				log(exception);
+				output.writeBytes(header(404, null));
+				return;
+			}
+	
+			String contenttype = null;
+			String mimetype = null;
+			for (Enumeration<String> e = bundle.getKeys(); e.hasMoreElements(); ) {
+				mimetype = e.nextElement();
+				if (path.endsWith(mimetype)) {
+					contenttype = bundle.getString(mimetype);
+					break;
+				}
+			}
+			
+			if (contenttype == null) {
+				contenttype = bundle.getString(".html");
+			}
+			
+			output.writeBytes(header(200, contenttype));
 
-			if (method == Method.GET) {
+			if (method == GET) {
+				int octets = 0;
 				while (true) {
 					int b = requested.read();
 					if (b == -1) {
 						break;
 					}
 					output.write(b);
+					octets++;
 				}
+				log(path + " " + octets);
 			}
 
 			requested.close();
-		} catch (Exception ignored) {}
 
+		} catch (Exception exception) {
+			log(exception);
+			try {
+				output.writeBytes(header(500, null));
+			} catch (Exception ignored) {}
+		}
 	}
 
 	/**
@@ -307,7 +319,7 @@ public class Server {
 	 * @param type is the type of data being returned.
 	 * @return
 	 */
-	protected String header(int code, Type type) {
+	protected String header(int code, String type) {
 		String s = "HTTP/1.0 ";
 		
 		switch (code) {
@@ -330,26 +342,14 @@ public class Server {
 			s = s + "501 Not Implemented";
 			break;
 		}
-
 		s = s + "\r\n";
 		s = s + "Connection: close\r\n";
 		s = s + "Server: " + Server.class.getName() + "\r\n";
-
-		if (type == Type.JPG) {
-			s = s + "Content-Type: image/jpeg\r\n";
-		} else if (type == Type.GIF) {
-			s = s + "Content-Type: image/gif\r\n";
-		} else if (type == Type.ZIP) {
-			s = s + "Content-Type: application/x-zip-compressed\r\n";
-		} else if (type == Type.PDF) {
-			s = s + "Content-Type: application/pdf\r\n";
-		} else if (type == Type.TXT) {
-			s = s + "Content-Type: text/plain\r\n";
-		} else if (type == Type.HTML) {
-			s = s + "Content-Type: text/html\r\n";
+		if (type !=  null) {
+			s = s + "Content-Type: " + type + "\r\n";
 		}
-
-		s = s + "\r\n";
+		
+		log(s);
 
 		return s;
 	}
