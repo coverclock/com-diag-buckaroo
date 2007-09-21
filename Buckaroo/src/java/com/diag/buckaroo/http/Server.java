@@ -58,7 +58,7 @@ public class Server {
 		 * Implements listener thread body.
 		 */
 		public void run() {
-			log("Running.");
+			log("Starting.");
 			
 			ServerSocket listensocket = null;
 			
@@ -75,7 +75,7 @@ public class Server {
 				try {
 					Socket connectionsocket = listensocket.accept();
 					InetAddress client = connectionsocket.getInetAddress();
-					log("Connected " + client.getHostName() + ".");
+					log("Serving " + client.getHostName() + ".");
 					BufferedReader input = new BufferedReader(new InputStreamReader(connectionsocket.getInputStream()));
 					DataOutputStream output = new DataOutputStream(connectionsocket.getOutputStream());
 					http(input, output);
@@ -92,6 +92,8 @@ public class Server {
 			} catch (Exception exception) {
 				log(exception);
 			}
+
+			log("Ending.");
 		}
 		
 	}
