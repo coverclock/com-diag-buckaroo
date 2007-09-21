@@ -31,7 +31,7 @@ public class TestServer {
 		Server server = new Server();
 		assertNotNull(server);
 		assertEquals(server.getPort(), 80);
-		assertEquals(server.getRoot(), "");
+		assertEquals(server.getRoot(), null);
 	}
 
 	@Test

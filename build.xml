@@ -106,13 +106,13 @@
 	</target>
 
 	<target name="compile" depends="out-dir, classpaths">
-		<javac source="1.5" debug="true" srcdir="${src.dir}" destdir="${out.dir}">
+		<javac source="1.6" debug="true" srcdir="${src.dir}" destdir="${out.dir}">
 			<classpath refid="build.classpath"/>
 		</javac>
 	</target>
 
 	<target name="tests" depends="out-dir, classpaths">
-		<javac source="1.5" debug="true" srcdir="${unit.dir}" destdir="${out.dir}">
+		<javac source="1.6" debug="true" srcdir="${unit.dir}" destdir="${out.dir}">
 			<classpath refid="build.classpath"/>
 		</javac>
 		<copy todir="${out.dir}">
