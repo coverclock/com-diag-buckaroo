@@ -44,10 +44,8 @@ public class Server {
 	private Listener listener = null;
 	private ResourceBundle bundle = null;
 	
-	// I use this instead of a Enum to make it easier to port to 1.4 for CVM.
-	static int	UNSUPPORTED = 0,
-				GET = 1,
-				HEAD = 2;
+	// I use this instead of an Enum to make it easier to port to 1.4 for CVM.
+	static int UNSUPPORTED = 0, GET = 1, HEAD = 2;
 
 	/**
 	 * Defines the listener thread that waits for incoming HTTP requests.
@@ -278,7 +276,7 @@ public class Server {
 				return;
 			}
 	
-			String contenttype = null;
+			String contenttype = bundle.getString(".bin");
 			String mimetype = null;
 			for (Enumeration<String> e = bundle.getKeys(); e.hasMoreElements(); ) {
 				mimetype = e.nextElement();
@@ -286,10 +284,6 @@ public class Server {
 					contenttype = bundle.getString(mimetype);
 					break;
 				}
-			}
-			
-			if (contenttype == null) {
-				contenttype = bundle.getString(".html");
 			}
 			
 			log("Type " + contenttype);
@@ -308,9 +302,8 @@ public class Server {
 					}
 					log("Complete " + octets);
 				} catch (Exception ignored) {
-					// Happens when the peer closes its end of the socket before
-					// we have sent the entire file; typically happens with JPEG
-					// and the like where the peer doesn't need the entire file.
+					// Typically happens when the client closes its end of the
+					// socket before we have sent the entire file.
 					log("Partial " + octets);
 				}
 			}

@@ -22,7 +22,6 @@ package com.diag.buckaroo.http;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import java.util.logging.Logger;
-import java.util.logging.Level;
 
 public class TestServer {
 
