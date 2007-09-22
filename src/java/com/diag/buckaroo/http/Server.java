@@ -58,12 +58,12 @@ public class Server {
 		 * Implements listener thread body.
 		 */
 		public void run() {
-			log("Starting.");
+			log("Starting");
 			
 			ServerSocket listensocket = null;
 			
 			try {
-				log("Binding " + port + ".");
+				log("Binding " + port);
 				listensocket = new ServerSocket(port);
 			} catch (Exception exception) {
 				log(exception);
@@ -71,14 +71,16 @@ public class Server {
 			}
 
 			while (enabled) {
-				log("Listening.");
+				log("Listening");
 				try {
 					Socket connectionsocket = listensocket.accept();
 					InetAddress client = connectionsocket.getInetAddress();
-					log("Serving " + client.getHostName() + ".");
+					log("Serving " + client.getHostName());
 					BufferedReader input = new BufferedReader(new InputStreamReader(connectionsocket.getInputStream()));
 					DataOutputStream output = new DataOutputStream(connectionsocket.getOutputStream());
 					http(input, output);
+					connectionsocket.shutdownInput();
+					connectionsocket.shutdownOutput();
 					input.close();
 					output.close();
 					connectionsocket.close();
@@ -93,7 +95,7 @@ public class Server {
 				log(exception);
 			}
 
-			log("Ending.");
+			log("Ending");
 		}
 		
 	}
@@ -129,7 +131,7 @@ public class Server {
 	 * @param string is the string to log.
 	 */
 	protected void log(String string) {
-		System.out.println(string); System.out.flush();
+		// System.out.println(string);
 		getLogger().fine(string);
 	}
 	
@@ -138,7 +140,7 @@ public class Server {
 	 * @param exception is the exception to log.
 	 */
 	protected void log(Exception exception) {
-		System.err.println(exception.toString()); System.err.flush();
+		// System.err.println(exception.toString());
 		getLogger().log(Level.WARNING, exception.toString(), exception);
 	}
 	
@@ -227,7 +229,7 @@ public class Server {
 			//GET /index.html HTTP/1.0
 			//HEAD /index.html HTTP/1.0
 			String tmp = input.readLine();
-			log(tmp);
+			log("Request " + tmp);
 			String tmp2 = new String(tmp);
 			tmp.toUpperCase();
 			if (tmp.startsWith("GET")) {
@@ -260,11 +262,11 @@ public class Server {
 			}
 			path = tmp2.substring(start + 2, end);
 			
-			log(path);
+			log("Path " + path);
 			
 			if (root != null) {
 				path = root + path;
-				log(path);
+				log("Effective " + path);
 			}
 			
 			FileInputStream requested = null;
@@ -290,19 +292,27 @@ public class Server {
 				contenttype = bundle.getString(".html");
 			}
 			
+			log("Type " + contenttype);
+			
 			output.writeBytes(header(200, contenttype));
 
 			if (method == GET) {
 				int octets = 0;
-				while (true) {
-					int b = requested.read();
-					if (b == -1) {
-						break;
+				try {
+					int b;
+					while (true) {
+						b = requested.read();
+						if (b == -1) { break; }
+						output.write(b);
+						octets++;
 					}
-					output.write(b);
-					octets++;
+					log("Complete " + octets);
+				} catch (Exception ignored) {
+					// Happens when the peer closes its end of the socket before
+					// we have sent the entire file; typically happens with JPEG
+					// and the like where the peer doesn't need the entire file.
+					log("Partial " + octets);
 				}
-				log(path + " " + octets);
 			}
 
 			requested.close();
@@ -350,8 +360,6 @@ public class Server {
 		if (type !=  null) {
 			s = s + "Content-Type: " + type + "\r\n";
 		}
-		
-		log(s);
 
 		return s;
 	}
