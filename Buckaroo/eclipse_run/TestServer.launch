@@ -13,4 +13,5 @@
 <stringAttribute key="org.eclipse.jdt.junit.TEST_KIND" value="org.eclipse.jdt.junit.loader.junit4"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.diag.buckaroo.http.TestServer"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Buckaroo"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.util.logging.config.file=${workspace_loc:Buckaroo}/logging.properties"/>
 </launchConfiguration>

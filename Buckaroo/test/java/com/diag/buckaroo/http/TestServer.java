@@ -31,7 +31,7 @@ public class TestServer {
 		Server server = new Server();
 		assertNotNull(server);
 		assertEquals(server.getPort(), 80);
-		assertEquals(server.getRoot(), null);
+		assertNull(server.getRoot());
 	}
 
 	@Test
@@ -44,6 +44,9 @@ public class TestServer {
 		Server server1 = server.setRoot("/Users/jsloan/Desktop/Home/www/");
 		assertEquals(server, server1);
 		assertEquals(server.getRoot(),"/Users/jsloan/Desktop/Home/www/");
+		Server server2 = server.setRoot(null);
+		assertEquals(server, server2);
+		assertNull(server.getRoot());
 	}
 
 	@Test
@@ -51,6 +54,7 @@ public class TestServer {
 		Server server = new Server();
 		assertNotNull(server);
 		assertEquals(server.getPort(), 80);
+		assertNull(server.getRoot());
 		Server server0 = server.start();
 		assertEquals(server, server0);
 		Server server1 = server.stop();
@@ -65,8 +69,8 @@ public class TestServer {
 		assertNotNull(server);
 		Logger log = server.getLogger();
 		assertNotNull(log);
-		log.setLevel(Level.ALL);
 		assertEquals(server.getPort(), 80);
+		assertNull(server.getRoot());
 		Server server0 = server.start();
 		assertEquals(server, server0);
 		try { Thread.sleep(delay); } catch (Exception interrupted) {}
