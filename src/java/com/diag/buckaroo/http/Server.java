@@ -77,10 +77,10 @@ public class Server {
 					BufferedReader input = new BufferedReader(new InputStreamReader(connectionsocket.getInputStream()));
 					DataOutputStream output = new DataOutputStream(connectionsocket.getOutputStream());
 					http(input, output);
-					connectionsocket.shutdownInput();
 					connectionsocket.shutdownOutput();
-					input.close();
+					connectionsocket.shutdownInput();
 					output.close();
+					input.close();
 					connectionsocket.close();
 				} catch (Exception exception) {
 					log(exception);
@@ -226,20 +226,29 @@ public class Server {
 			//This is the two types of request we can handle
 			//GET /index.html HTTP/1.0
 			//HEAD /index.html HTTP/1.0
-			String tmp = input.readLine();
-			log("Request " + tmp);
-			String tmp2 = new String(tmp);
-			tmp.toUpperCase();
-			if (tmp.startsWith("GET")) {
+			String line = input.readLine();
+			String command = new String(line).toUpperCase();
+			if (command.startsWith("GET")) {
 				method = GET;
-			} else if (tmp.startsWith("HEAD")) {
+			} else if (command.startsWith("HEAD")) {
 				method = HEAD;
 			} else {
 				method = UNSUPPORTED;
 			}
+			
+			StringBuffer request = new StringBuffer(line);
+			request.append("\r\n");
+			try {
+				while (input.ready()) {
+					request.append(input.readLine());
+					request.append("\r\n");
+				}
+			} catch (Exception ignored) {}
+			
+			log("Request " + request.toString());
 
 			if (method == UNSUPPORTED) {
-				output.writeBytes(header(501, null));
+				output.writeBytes(header(501));
 				return;
 			}
 
@@ -249,16 +258,16 @@ public class Server {
 			// copy what is between minus slash, then you get "index.html"
 			int start = 0;
 			int end = 0;
-			for (int a = 0; a < tmp2.length(); a++) {
-				if (tmp2.charAt(a) == ' ' && start != 0) {
+			for (int a = 0; a < line.length(); a++) {
+				if (line.charAt(a) == ' ' && start != 0) {
 					end = a;
 					break;
 				}
-				if (tmp2.charAt(a) == ' ' && start == 0) {
+				if (line.charAt(a) == ' ' && start == 0) {
 					start = a;
 				}
 			}
-			path = tmp2.substring(start + 2, end);
+			path = line.substring(start + 2, end);
 			
 			log("Path " + path);
 			
@@ -267,15 +276,27 @@ public class Server {
 				log("Effective " + path);
 			}
 			
-			FileInputStream requested = null;
+			File metadata = null;
+			long length = -1;
 			try {
-				requested = new FileInputStream(path);
+				metadata = new File(path);
+				length = metadata.length();
 			} catch (Exception exception) {
-				log(exception);
-				output.writeBytes(header(404, null));
+				log (exception);
+				output.writeBytes(header(404));
 				return;
 			}
-	
+			log("Length " + length);
+
+			FileInputStream data = null;
+			try {
+				data = new FileInputStream(path);
+			} catch (Exception exception) {
+				log(exception);
+				output.writeBytes(header(404));
+				return;
+			}
+			
 			String contenttype = bundle.getString(".bin");
 			String mimetype = null;
 			for (Enumeration<String> e = bundle.getKeys(); e.hasMoreElements(); ) {
@@ -285,17 +306,16 @@ public class Server {
 					break;
 				}
 			}
-			
 			log("Type " + contenttype);
 			
-			output.writeBytes(header(200, contenttype));
+			output.writeBytes(header(200, contenttype, length));
 
 			if (method == GET) {
 				int octets = 0;
 				try {
 					int b;
 					while (true) {
-						b = requested.read();
+						b = data.read();
 						if (b == -1) { break; }
 						output.write(b);
 						octets++;
@@ -308,12 +328,12 @@ public class Server {
 				}
 			}
 
-			requested.close();
+			data.close();
 
 		} catch (Exception exception) {
 			log(exception);
 			try {
-				output.writeBytes(header(500, null));
+				output.writeBytes(header(500));
 			} catch (Exception ignored) {}
 		}
 	}
@@ -321,40 +341,66 @@ public class Server {
 	/**
 	 * Generates an appropriate HTTP header for the output data stream.
 	 * @param code is the HTTP return code.
-	 * @param type is the type of data being returned.
-	 * @return
+	 * @return the header as a String.
 	 */
-	protected String header(int code, String type) {
-		String s = "HTTP/1.0 ";
+	protected String header(int code) {
+		return header(code, null, -1);
+	}
+
+	/**
+	 * Generates an appropriate HTTP header for the output data stream.
+	 * @param code is the HTTP return code.
+	 * @param type is the content type of data being returned.
+	 * @param length is the content length of the data being returned.
+	 * @return the header as a String.
+	 */
+	protected String header(int code, String type, long length) {
+		StringBuffer response = new StringBuffer("HTTP/1.0 ");
 		
 		switch (code) {
 		case 200:
-			s = s + "200 OK";
+			response.append("200 OK");
 			break;
 		case 400:
-			s = s + "400 Bad Request";
+			response.append("400 Bad Request");
 			break;
 		case 403:
-			s = s + "403 Forbidden";
+			response.append("403 Forbidden");
 			break;
 		case 404:
-			s = s + "404 Not Found";
+			response.append("404 Not Found");
 			break;
 		case 500:
-			s = s + "500 Internal Server Error";
+			response.append("500 Internal Server Error");
 			break;
 		case 501:
-			s = s + "501 Not Implemented";
+			response.append("501 Not Implemented");
+			break;
+		default:
+			log("Code " + code);
+			response.append("000 Unknown Error");
 			break;
 		}
-		s = s + "\r\n";
-		s = s + "Connection: close\r\n";
-		s = s + "Server: " + Server.class.getName() + "\r\n";
+		response.append("\r\n");
+		response.append("Connection: close\r\n");
+		response.append("Server: ");
+		response.append(Server.class.getName());
+		response.append("\r\n");
 		if (type !=  null) {
-			s = s + "Content-Type: " + type + "\r\n";
+			response.append("Content-Type: ");
+			response.append(type);
+			response.append("\r\n");
+		}
+		if (length >= 0) {
+			response.append("Content-Length: ");
+			response.append(new Long(length).toString());
+			response.append("\r\n");
 		}
 
-		return s;
+		String r = response.toString();
+		log("Response " + r);
+		
+		return r;
 	}
 	
 	/**
