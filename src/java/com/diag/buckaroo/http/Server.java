@@ -313,14 +313,6 @@ public class Server {
 
 			if (method == GET) {
 				
-				/*
-				FileOutputStream copy = null;
-				if (path.equals("/Users/jsloan/Desktop/Home/www/pictures/Sloan_Mainframe.jpg")) {
-					copy = new FileOutputStream("/Users/jsloan/Desktop/Home/Temporary/Sloan_Mainframe.jpg");
-					if (!contenttype.equals("image/jpeg")) { log("NOT EQUAL"); }
-				}
-				*/
-				
 				int octets = 0;
 				try {
 					int b;
@@ -328,7 +320,6 @@ public class Server {
 						b = data.read();
 						if (b == -1) { break; }
 						output.write(b);
-						// if (copy != null) { copy.write(b); }
 						octets++;
 					}
 					log("Complete " + octets);
@@ -338,7 +329,6 @@ public class Server {
 					log("Partial " + octets);
 				}
 				
-				// if (copy != null) { copy.close(); }
 			}
 
 			data.close();
@@ -395,28 +385,37 @@ public class Server {
 			break;
 		}
 		response.append("\r\n");
+		
 		response.append("Connection: close\r\n");
+		
 		response.append("Server: ");
 		response.append(Server.class.getName());
 		response.append("\r\n");
+		
 		Date date = new Date();
+		
 		response.append("Date: ");
 		String d = format.format(date);
 		response.append(d);
 		response.append("\r\n");
+		
 		response.append("Last-Modified: ");
 		response.append(d);
 		response.append("\r\n");
+		
 		if (type !=  null) {
 			response.append("Content-Type: ");
 			response.append(type);
 			response.append("\r\n");
 		}
+		
 		if (length >= 0) {
 			response.append("Content-Length: ");
 			response.append(new Long(length).toString());
 			response.append("\r\n");
 		}
+		
+		response.append("\r\n"); // Separates header from following data.
 
 		String r = response.toString();
 		log("Response " + r);

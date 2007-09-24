@@ -10,4 +10,5 @@
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.diag.buckaroo.http.Server"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="/Users/jsloan/Desktop/Home/www/&#13;&#10;60000&#13;&#10;80"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="Buckaroo"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.util.logging.config.file=${workspace_loc:Buckaroo}/logging.properties"/>
 </launchConfiguration>
