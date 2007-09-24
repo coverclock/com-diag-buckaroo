@@ -25,6 +25,8 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.ResourceBundle;
 import java.util.Enumeration;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 /**
  * This class implements a simple single threader (and unsecure) HTTP server
@@ -43,6 +45,7 @@ public class Server {
 	private boolean enabled = false;
 	private Listener listener = null;
 	private ResourceBundle bundle = null;
+	private SimpleDateFormat format = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z");
 	
 	// I use this instead of an Enum to make it easier to port to 1.4 for CVM.
 	static int UNSUPPORTED = 0, GET = 1, HEAD = 2;
@@ -77,8 +80,6 @@ public class Server {
 					BufferedReader input = new BufferedReader(new InputStreamReader(connectionsocket.getInputStream()));
 					DataOutputStream output = new DataOutputStream(connectionsocket.getOutputStream());
 					http(input, output);
-					connectionsocket.shutdownOutput();
-					connectionsocket.shutdownInput();
 					output.close();
 					input.close();
 					connectionsocket.close();
@@ -311,6 +312,15 @@ public class Server {
 			output.writeBytes(header(200, contenttype, length));
 
 			if (method == GET) {
+				
+				/*
+				FileOutputStream copy = null;
+				if (path.equals("/Users/jsloan/Desktop/Home/www/pictures/Sloan_Mainframe.jpg")) {
+					copy = new FileOutputStream("/Users/jsloan/Desktop/Home/Temporary/Sloan_Mainframe.jpg");
+					if (!contenttype.equals("image/jpeg")) { log("NOT EQUAL"); }
+				}
+				*/
+				
 				int octets = 0;
 				try {
 					int b;
@@ -318,6 +328,7 @@ public class Server {
 						b = data.read();
 						if (b == -1) { break; }
 						output.write(b);
+						// if (copy != null) { copy.write(b); }
 						octets++;
 					}
 					log("Complete " + octets);
@@ -326,6 +337,8 @@ public class Server {
 					// socket before we have sent the entire file.
 					log("Partial " + octets);
 				}
+				
+				// if (copy != null) { copy.close(); }
 			}
 
 			data.close();
@@ -385,6 +398,14 @@ public class Server {
 		response.append("Connection: close\r\n");
 		response.append("Server: ");
 		response.append(Server.class.getName());
+		response.append("\r\n");
+		Date date = new Date();
+		response.append("Date: ");
+		String d = format.format(date);
+		response.append(d);
+		response.append("\r\n");
+		response.append("Last-Modified: ");
+		response.append(d);
 		response.append("\r\n");
 		if (type !=  null) {
 			response.append("Content-Type: ");
