@@ -109,6 +109,11 @@
 		<javac source="1.6" debug="true" srcdir="${src.dir}" destdir="${out.dir}">
 			<classpath refid="build.classpath"/>
 		</javac>
+        <copy todir="${out.dir}">
+            <fileset dir="${src.dir}">
+                <include name="${properties.list}"/>
+            </fileset>
+        </copy>
 	</target>
 
 	<target name="tests" depends="out-dir, classpaths">
