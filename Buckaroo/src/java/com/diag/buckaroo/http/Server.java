@@ -52,6 +52,7 @@ public class Server {
 	
 	// I use this instead of an Enum to make it easier to port to 1.4 for CVM.
 	static int UNSUPPORTED = 0, GET = 1, HEAD = 2;
+	static String defaults[] = { "index.html", "index.htm", "default.htm" };
 
 	/**
 	 * Defines the listener thread that waits for incoming HTTP requests.
@@ -423,6 +424,21 @@ public class Server {
 				log(exception);
 				output.writeBytes(header(404));
 				return;
+			}
+			
+			if (directory) {
+				for (int ii = 0; ii < defaults.length; ++ii) {
+					String effective = name.endsWith("/") ? name + defaults[ii] : name + "/" + defaults[ii];
+					try {
+						if (!isDirectory(effective)) {
+							log("Effective " + effective);
+							name = effective;
+							directory = false;
+							break;
+						}
+					} catch (Exception exception) {
+					}
+				}
 			}
 			
 			if (method == GET) {
