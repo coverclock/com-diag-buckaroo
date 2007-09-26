@@ -403,8 +403,9 @@ public class Server {
 					request.append(input.readLine());
 					request.append("\r\n");
 				}
-			} catch (Exception ignored) {}
-			
+			} catch (Exception exception) {
+				log(exception);
+			}			
 			log("Request " + request.toString());
 
 			if (method == UNSUPPORTED) {
@@ -420,11 +421,7 @@ public class Server {
 				directory = isDirectory(name);
 			} catch (Exception exception) {
 				log(exception);
-				try {
-					output.writeBytes(header(404));
-				} catch (Exception exception2) {
-					log(exception2);
-				}
+				output.writeBytes(header(404));
 				return;
 			}
 			
@@ -440,7 +437,9 @@ public class Server {
 			log(exception);
 			try {
 				output.writeBytes(header(500));
-			} catch (Exception ignored) {}
+			} catch (Exception exception2) {
+				log(exception2);
+			}
 		}
 	}
 
@@ -536,11 +535,7 @@ public class Server {
 		response.append("Date: ");
 		String d = format.format(date);
 		response.append(d);
-		response.append("\r\n");
-		
-		response.append("Last-Modified: ");
-		response.append(d);
-		response.append("\r\n");
+		response.append("\r\n");	
 		
 		if (location != null) {
 			response.append("Location: ");
@@ -549,6 +544,9 @@ public class Server {
 		}
 		
 		if (type !=  null) {
+			response.append("Last-Modified: ");
+			response.append(d);
+			response.append("\r\n");
 			response.append("Content-Type: ");
 			response.append(type);
 			response.append("\r\n");
