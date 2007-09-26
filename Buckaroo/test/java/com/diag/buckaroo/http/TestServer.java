@@ -37,15 +37,20 @@ public class TestServer {
 	public void test01() {
 		Server server = new Server();
 		assertNotNull(server);
+		assertEquals(server.getPort(), 80);
+		assertNull(server.getRoot());
 		Server server0 = server.setPort(8080);
 		assertEquals(server, server0);
-		assertEquals(server.getPort(), 8080);
-		Server server1 = server.setRoot("/Users/jsloan/Desktop/Home/www/");
+		assertEquals(server.getPort(), 8080);		
+		Server server1 = server.setRoot("/Users/jsloan/Desktop/Home/www");
 		assertEquals(server, server1);
-		assertEquals(server.getRoot(),"/Users/jsloan/Desktop/Home/www/");
+		assertEquals(server.getRoot(),"/Users/jsloan/Desktop/Home/www");
 		Server server2 = server.setRoot(null);
 		assertEquals(server, server2);
 		assertNull(server.getRoot());
+		Server server3 = server.setPort(80);
+		assertEquals(server, server3);
+		assertEquals(server.getPort(), 80);		
 	}
 
 	@Test
@@ -69,12 +74,14 @@ public class TestServer {
 		Logger log = server.getLogger();
 		assertNotNull(log);
 		assertEquals(server.getPort(), 80);
-		assertNull(server.getRoot());
+		Server server1 = server.setRoot("/Users/jsloan/Desktop/Home/www");
+		assertEquals(server, server1);
+		assertEquals(server.getRoot(),"/Users/jsloan/Desktop/Home/www");
 		Server server0 = server.start();
 		assertEquals(server, server0);
 		try { Thread.sleep(delay); } catch (Exception interrupted) {}
-		Server server1 = server.stop();
-		assertEquals(server, server1);
+		Server server2 = server.stop();
+		assertEquals(server, server2);
 	}
 
 	

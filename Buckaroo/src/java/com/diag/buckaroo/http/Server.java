@@ -26,6 +26,7 @@ import java.util.logging.Level;
 import java.util.ResourceBundle;
 import java.util.Enumeration;
 import java.util.Date;
+import java.util.StringTokenizer;
 import java.text.SimpleDateFormat;
 
 /**
@@ -219,19 +220,19 @@ public class Server {
 	 * @param output is the HTTP output stream.
 	 */
 	protected void http(BufferedReader input, DataOutputStream output) {
-		int method = UNSUPPORTED;
-		String path = null;
-		
+
 		try {
 		
 			//This is the two types of request we can handle
 			//GET /index.html HTTP/1.0
 			//HEAD /index.html HTTP/1.0
+			int method = UNSUPPORTED;
 			String line = input.readLine();
-			String command = new String(line).toUpperCase();
-			if (command.startsWith("GET")) {
+			StringTokenizer tokenizer = new StringTokenizer(line);
+			String command = tokenizer.nextToken().toUpperCase();
+			if (command.equals("GET")) {
 				method = GET;
-			} else if (command.startsWith("HEAD")) {
+			} else if (command.equals("HEAD")) {
 				method = HEAD;
 			} else {
 				method = UNSUPPORTED;
@@ -253,85 +254,82 @@ public class Server {
 				return;
 			}
 
-			// Given "GET /index.html HTTP/1.0 ......."
-			// find first space
-			// find next space
-			// copy what is between minus slash, then you get "index.html"
-			int start = 0;
-			int end = 0;
-			for (int a = 0; a < line.length(); a++) {
-				if (line.charAt(a) == ' ' && start != 0) {
-					end = a;
-					break;
-				}
-				if (line.charAt(a) == ' ' && start == 0) {
-					start = a;
-				}
-			}
-			path = line.substring(start + 2, end);
+			String name = tokenizer.nextToken();
+			log("Name " + name);
 			
+			String path = null;
+			if (root != null) {
+				path = root + name;
+			} else {
+				path = name;
+			}
 			log("Path " + path);
 			
-			if (root != null) {
-				path = root + path;
-				log("Effective " + path);
-			}
-			
-			File metadata = null;
-			long length = -1;
-			try {
-				metadata = new File(path);
-				length = metadata.length();
-			} catch (Exception exception) {
-				log (exception);
+			File metadata = new File(path);
+			if (!metadata.exists()) {
 				output.writeBytes(header(404));
 				return;
 			}
+			long length = metadata.length();
 			log("Length " + length);
-
-			FileInputStream data = null;
-			try {
-				data = new FileInputStream(path);
-			} catch (Exception exception) {
-				log(exception);
-				output.writeBytes(header(404));
-				return;
-			}
+			boolean directory = metadata.isDirectory();
+			log("Directory " + directory);
 			
-			String contenttype = bundle.getString(".bin");
-			String mimetype = null;
-			for (Enumeration<String> e = bundle.getKeys(); e.hasMoreElements(); ) {
-				mimetype = e.nextElement();
-				if (path.endsWith(mimetype)) {
-					contenttype = bundle.getString(mimetype);
-					break;
+			String contenttype = null;
+			if (!directory) {
+				contenttype = bundle.getString(".bin");
+				String mimetype = null;
+				for (Enumeration<String> e = bundle.getKeys(); e.hasMoreElements(); ) {
+					mimetype = e.nextElement();
+					if (name.endsWith(mimetype)) {
+						contenttype = bundle.getString(mimetype);
+						break;
+					}
 				}
+			} else {
+				contenttype = "text/html";
 			}
 			log("Type " + contenttype);
-			
-			output.writeBytes(header(200, contenttype, length));
 
 			if (method == GET) {
-				
-				int octets = 0;
-				try {
+				if (!directory) {
+					output.writeBytes(header(200, contenttype, length));
+					FileInputStream data = new FileInputStream(path);
 					int b;
 					while (true) {
 						b = data.read();
 						if (b == -1) { break; }
 						output.write(b);
-						octets++;
 					}
-					log("Complete " + octets);
-				} catch (Exception ignored) {
-					// Typically happens when the client closes its end of the
-					// socket before we have sent the entire file.
-					log("Partial " + octets);
+					data.close();
+				} else {
+					output.writeBytes(header(200, contenttype));
+					output.writeBytes("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">");
+					output.writeBytes("<HTML>\r\n");
+					output.writeBytes("<HEAD><TITLE>Index of " + name + "</TITLE></HEAD>\r\n");
+					output.writeBytes("<BODY>\r\n");
+					output.writeBytes("<H1>Index of " + name + "</H1><HR><PRE>\r\n");
+					int index = name.lastIndexOf('/');
+					String parent =  null;
+					if (index < 0 ) {
+						parent = "/";
+					} else {
+						parent = name.substring(0, index);
+					}
+					output.writeBytes("<A HREF=\"" + parent + "\">..</A>\r\n");
+					File files[] = metadata.listFiles();
+					// I'm using the old form of for() to expedite port to CVM.
+					for (int ii = 0; ii < files.length; ++ii) {
+						if (files[ii].isDirectory()) {
+							output.writeBytes("<A HREF=\"" + files[ii].getName() + "/\">" + files[ii].getName() + "/</A>\r\n");
+						} else {
+							output.writeBytes("<A HREF=\"" + files[ii].getName() + "\">" + files[ii].getName() + "</A>\r\n");
+						}				}
+					output.writeBytes("</PRE><HR>\r\n");
+					output.writeBytes("<ADDRESS>" + this.getClass().getName() + "</ADDRESS>\r\n");
+					output.writeBytes("</BODY></HTML>\r\n");
 				}
-				
 			}
-
-			data.close();
 
 		} catch (Exception exception) {
 			log(exception);
@@ -348,6 +346,16 @@ public class Server {
 	 */
 	protected String header(int code) {
 		return header(code, null, -1);
+	}
+
+	/**
+	 * Generates an appropriate HTTP header for the output data stream.
+	 * @param code is the HTTP return code.
+	 * @param type is the content type of data being returned.
+	 * @return the header as a String.
+	 */
+	protected String header(int code, String type) {
+		return header(code, type, -1);
 	}
 
 	/**
@@ -389,7 +397,7 @@ public class Server {
 		response.append("Connection: close\r\n");
 		
 		response.append("Server: ");
-		response.append(Server.class.getName());
+		response.append(this.getClass().getName());
 		response.append("\r\n");
 		
 		Date date = new Date();
