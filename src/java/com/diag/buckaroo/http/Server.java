@@ -30,12 +30,12 @@ import java.util.StringTokenizer;
 import java.text.SimpleDateFormat;
 
 /**
- * This class implements a simple single threader HTTP server that can be
+ * This class implements a simple single-threaded HTTP server that can be
  * embedded inside an application. It is based on prior work by Jon Berg at
  * TurtleMeat. This isn't intended to be a production web server; it's
  * intended to be an embeddable web server that can be modified and extended.
  * When modifying and extending this class, remember that HTTP servers ideally
- * should be stateless.
+ * should be stateless (which this one is).
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
@@ -235,6 +235,143 @@ public class Server {
 		}
 		return contenttype;
 	}
+	
+	/**
+	 * Maps the file or directory name String to a path String.
+	 * @param name is the file name String.
+	 * @return a path String.
+	 */
+	public String mapNameToPath(String name) {
+		return (root != null) ? root + name : name;
+	}
+	
+	/**
+	 * Return true if the name is a directory, false if it is a file. This
+	 * method can be overridden to provide other behavior, for example for
+	 * names that do not map to the local file system.
+	 * @param name is the directory or file name String.
+	 * @return true if directory, false if file.
+	 * @throws FileNotFoundException if the file or directory does not exist.
+	 */
+	public boolean isDirectory(String name) throws FileNotFoundException {
+		String path = mapNameToPath(name);
+		File metadata = new File(path);
+		if (!metadata.exists()) {
+			throw new FileNotFoundException(path);
+		}
+		return metadata.isDirectory();
+	}
+	
+	/**
+	 * Handle sending a file from the local file system to the client. This
+	 * method can be overridden if other behavior is desired. For example,
+	 * certain file names can be generated dynamically.
+	 * @param output is the output stream to the client.
+	 * @param name is the file name String.
+	 */
+	protected void doFile(DataOutputStream output, String name) {
+		try {
+			
+			String path = mapNameToPath(name);
+			log("File " + path);
+			
+			String contenttype = mapNameToType(path);
+			log("Type " + contenttype);
+			
+			File metadata = new File(path);
+			FileInputStream data = new FileInputStream(metadata);
+			
+			output.writeBytes(header(200, contenttype, metadata.length()));
+			
+			int octet;
+			int sent = 0;
+			try {
+				while (true) {
+	
+					octet = data.read();
+					if (octet == -1) { break; }
+					output.write(octet);
+					++sent;
+				}
+			} catch (Exception exception) {
+				// The far end may close the socket before we complete sending
+				// the file if it doesn't like the file content. Usually I
+				// find that I've botched the HTTP headers somehow.
+				log(exception);
+			}
+			
+			data.close();
+			
+			log("Sent " + sent);
+			
+		} catch (Exception exception) {
+			// Typically this occurs because the file is not found.
+			log(exception);
+			try {
+				output.writeBytes(header(404));
+			} catch (Exception exception2) {
+				log(exception2);
+			}
+		}
+	}
+	
+	/**
+	 * Handle sending a directory listing from the local file system to the
+	 * client. This method can be overridden if other behavior is desired. For
+	 * example, certain directory names can be generated dynamically.
+	 * @param output is the output stream to the client.
+	 * @param name is the directory name String.
+	 */
+	protected void doDirectory(DataOutputStream output, String name) {
+		try {
+			
+			String path = mapNameToPath(name);
+			log("Directory " + path);
+			
+			String contenttype = "text/html";
+			log("Type " + contenttype);
+			
+			File metadata = new File(path);
+			File files[] = metadata.listFiles();
+			
+			String parent = null;
+			if (name.endsWith("/")) {
+				output.writeBytes(header(200, contenttype));
+				parent = name.substring(0, name.length() - 1);
+			} else {
+				output.writeBytes(header(301, contenttype, name + "/"));
+				parent = name;
+			}
+			int index = parent.lastIndexOf('/');
+			parent = (index <= 0) ? "/" : parent.substring(0, index + 1);
+			
+			output.writeBytes("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">");
+			output.writeBytes("<HTML>\r\n");
+			output.writeBytes("<HEAD><TITLE>Index of " + name + "</TITLE></HEAD>\r\n");
+			output.writeBytes("<BODY>\r\n");
+			output.writeBytes("<H1>Index of " + name + "</H1><HR><PRE>\r\n");
+			output.writeBytes("<A HREF=\"" + parent + "\">..</A>\r\n");
+			// I'm using the old form of for() to expedite port to CVM.
+			for (int ii = 0; ii < files.length; ++ii) {
+				if (files[ii].isDirectory()) {
+					output.writeBytes("<A HREF=\"" + files[ii].getName() + "/\">" + files[ii].getName() + "/</A>\r\n");
+				} else {
+					output.writeBytes("<A HREF=\"" + files[ii].getName() + "\">" + files[ii].getName() + "</A>\r\n");
+				}				}
+			output.writeBytes("</PRE><HR>\r\n");
+			output.writeBytes("<ADDRESS>" + this.getClass().getName() + "</ADDRESS>\r\n");
+			output.writeBytes("</BODY></HTML>\r\n");
+			
+		} catch (Exception exception) {
+			// Typically this occurs because the directory is not found.
+			log(exception);
+			try {
+				output.writeBytes(header(404));
+			} catch (Exception exception2) {
+				log(exception2);
+			}
+		}
+	}
 
 	/**
 	 * Services a single HTTP request.
@@ -242,7 +379,6 @@ public class Server {
 	 * @param output is the HTTP output stream.
 	 */
 	protected void http(BufferedReader input, DataOutputStream output) {
-
 		try {
 		
 			//This is the two types of request we can handle
@@ -278,72 +414,25 @@ public class Server {
 
 			String name = tokenizer.nextToken();
 			log("Name " + name);
-			
-			String path = null;
-			if (root != null) {
-				path = root + name;
-			} else {
-				path = name;
-			}
-			log("Path " + path);
-			
-			File metadata = new File(path);
-			if (!metadata.exists()) {
-				output.writeBytes(header(404));
+
+			boolean directory = false;
+			try {
+				directory = isDirectory(name);
+			} catch (Exception exception) {
+				log(exception);
+				try {
+					output.writeBytes(header(404));
+				} catch (Exception exception2) {
+					log(exception2);
+				}
 				return;
 			}
-			long length = metadata.length();
-			log("Length " + length);
-			boolean directory = metadata.isDirectory();
-			log("Directory " + directory);
 			
-			String contenttype = null;
-			if (!directory) {
-				contenttype = mapNameToType(name);
-			} else {
-				contenttype = "text/html";
-			}
-			log("Type " + contenttype);
-
 			if (method == GET) {
 				if (!directory) {
-					output.writeBytes(header(200, contenttype, length));
-					FileInputStream data = new FileInputStream(path);
-					int b;
-					while (true) {
-						b = data.read();
-						if (b == -1) { break; }
-						output.write(b);
-					}
-					data.close();
+					doFile(output, name);
 				} else {
-					String parent = null;
-					if (name.endsWith("/")) {
-						output.writeBytes(header(200, contenttype));
-						parent = name.substring(0, name.length() - 1);
-					} else {
-						output.writeBytes(header(301, contenttype, name + "/"));
-						parent = name;
-					}
-					int index = parent.lastIndexOf('/');
-					parent = (index <= 0) ? "/" : parent.substring(0, index + 1);
-					output.writeBytes("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">");
-					output.writeBytes("<HTML>\r\n");
-					output.writeBytes("<HEAD><TITLE>Index of " + name + "</TITLE></HEAD>\r\n");
-					output.writeBytes("<BODY>\r\n");
-					output.writeBytes("<H1>Index of " + name + "</H1><HR><PRE>\r\n");
-					output.writeBytes("<A HREF=\"" + parent + "\">..</A>\r\n");
-					File files[] = metadata.listFiles();
-					// I'm using the old form of for() to expedite port to CVM.
-					for (int ii = 0; ii < files.length; ++ii) {
-						if (files[ii].isDirectory()) {
-							output.writeBytes("<A HREF=\"" + files[ii].getName() + "/\">" + files[ii].getName() + "/</A>\r\n");
-						} else {
-							output.writeBytes("<A HREF=\"" + files[ii].getName() + "\">" + files[ii].getName() + "</A>\r\n");
-						}				}
-					output.writeBytes("</PRE><HR>\r\n");
-					output.writeBytes("<ADDRESS>" + this.getClass().getName() + "</ADDRESS>\r\n");
-					output.writeBytes("</BODY></HTML>\r\n");
+					doDirectory(output, name);
 				}
 			}
 
