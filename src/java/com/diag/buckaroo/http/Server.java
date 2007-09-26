@@ -30,10 +30,12 @@ import java.util.StringTokenizer;
 import java.text.SimpleDateFormat;
 
 /**
- * This class implements a simple single threader (and unsecure) HTTP server
- * that can be embedded inside an application. It is based on prior work by Jon
- * Berg <jon.berg at turtlemeat.com>. See http://www.turtlemeat.com for more
- * information.
+ * This class implements a simple single threader HTTP server that can be
+ * embedded inside an application. It is based on prior work by Jon Berg at
+ * TurtleMeat. This isn't intended to be a production web server; it's
+ * intended to be an embeddable web server that can be modified and extended.
+ * When modifying and extending this class, remember that HTTP servers ideally
+ * should be stateless.
  *
  * @author <A HREF="mailto:coverclock@diag.com">Chip Overclock</A>
  *
@@ -213,6 +215,26 @@ public class Server {
 		}
 		return this;
 	}
+	
+	/**
+	 * Map a file name suffix (e.g. ".jpg") to a content type (e.g.
+	 * "image/jpeg"). If the file name suffix can't be found in the mime
+	 * resource bundle, the content type for suffix ".bin" is returned.
+	 * @param name is the file name String including the file suffix.
+	 * @return a content type String.
+	 */
+	public String mapNameToType(String name) {
+		String contenttype = bundle.getString(".bin");
+		String mimetype = null;
+		for (Enumeration<String> e = bundle.getKeys(); e.hasMoreElements(); ) {
+			mimetype = e.nextElement();
+			if (name.endsWith(mimetype)) {
+				contenttype = bundle.getString(mimetype);
+				break;
+			}
+		}
+		return contenttype;
+	}
 
 	/**
 	 * Services a single HTTP request.
@@ -277,15 +299,7 @@ public class Server {
 			
 			String contenttype = null;
 			if (!directory) {
-				contenttype = bundle.getString(".bin");
-				String mimetype = null;
-				for (Enumeration<String> e = bundle.getKeys(); e.hasMoreElements(); ) {
-					mimetype = e.nextElement();
-					if (name.endsWith(mimetype)) {
-						contenttype = bundle.getString(mimetype);
-						break;
-					}
-				}
+				contenttype = mapNameToType(name);
 			} else {
 				contenttype = "text/html";
 			}
@@ -303,19 +317,21 @@ public class Server {
 					}
 					data.close();
 				} else {
-					output.writeBytes(header(200, contenttype));
+					String parent = null;
+					if (name.endsWith("/")) {
+						output.writeBytes(header(200, contenttype));
+						parent = name.substring(0, name.length() - 1);
+					} else {
+						output.writeBytes(header(301, contenttype, name + "/"));
+						parent = name;
+					}
+					int index = parent.lastIndexOf('/');
+					parent = (index <= 0) ? "/" : parent.substring(0, index + 1);
 					output.writeBytes("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\">");
 					output.writeBytes("<HTML>\r\n");
 					output.writeBytes("<HEAD><TITLE>Index of " + name + "</TITLE></HEAD>\r\n");
 					output.writeBytes("<BODY>\r\n");
 					output.writeBytes("<H1>Index of " + name + "</H1><HR><PRE>\r\n");
-					int index = name.lastIndexOf('/');
-					String parent =  null;
-					if (index < 0 ) {
-						parent = "/";
-					} else {
-						parent = name.substring(0, index);
-					}
 					output.writeBytes("<A HREF=\"" + parent + "\">..</A>\r\n");
 					File files[] = metadata.listFiles();
 					// I'm using the old form of for() to expedite port to CVM.
@@ -345,7 +361,7 @@ public class Server {
 	 * @return the header as a String.
 	 */
 	protected String header(int code) {
-		return header(code, null, -1);
+		return header(code, null, -1, null);
 	}
 
 	/**
@@ -355,7 +371,18 @@ public class Server {
 	 * @return the header as a String.
 	 */
 	protected String header(int code, String type) {
-		return header(code, type, -1);
+		return header(code, type, -1, null);
+	}
+
+	/**
+	 * Generates an appropriate HTTP header for the output data stream.
+	 * @param code is the HTTP return code.
+	 * @param type is the content type of data being returned.
+	 * @param location is the new Location of the web page.
+	 * @return the header as a String.
+	 */
+	protected String header(int code, String type, String location) {
+		return header(code, type, -1, location);
 	}
 
 	/**
@@ -366,11 +393,26 @@ public class Server {
 	 * @return the header as a String.
 	 */
 	protected String header(int code, String type, long length) {
+		return header(code, type, length, null);
+	}
+
+	/**
+	 * Generates an appropriate HTTP header for the output data stream.
+	 * @param code is the HTTP return code.
+	 * @param type is the content type of data being returned.
+	 * @param length is the content length of the data being returned.
+	 * @param location is the new Location of the web page.
+	 * @return the header as a String.
+	 */
+	protected String header(int code, String type, long length, String location) {
 		StringBuffer response = new StringBuffer("HTTP/1.0 ");
 		
 		switch (code) {
 		case 200:
 			response.append("200 OK");
+			break;
+		case 301:
+			response.append("301 Moved Permanently");
 			break;
 		case 400:
 			response.append("400 Bad Request");
@@ -410,6 +452,12 @@ public class Server {
 		response.append("Last-Modified: ");
 		response.append(d);
 		response.append("\r\n");
+		
+		if (location != null) {
+			response.append("Location: ");
+			response.append(location);
+			response.append("\r\n");
+		}
 		
 		if (type !=  null) {
 			response.append("Content-Type: ");
