@@ -21,6 +21,9 @@ package com.diag.buckaroo.http;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
+
+import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
 import java.util.logging.Logger;
 
 public class TestServer {
@@ -69,7 +72,27 @@ public class TestServer {
 	public void test03() {
 		String value = System.getProperty(this.getClass().getSimpleName());
 		long delay = (value != null) ? Long.parseLong(value) : 60000;
-		Server server = new Server();
+		Server server = new Server() {
+			public boolean isDirectory(String name) throws FileNotFoundException {
+				return name.equals("/synthesized.html") ? false : super.isDirectory(name);
+			}
+			protected void doFile(DataOutputStream output, String name) {
+				if (!name.equals("/synthesized.html")) {
+					super.doFile(output, name);
+					return;
+				}
+				try {
+					output.writeBytes(header(200, "text/html"));
+					output.writeBytes("<HTML>");
+					output.writeBytes("<BODY>");
+					output.writeBytes("<A HREF=\"synthesized.html\">synthesized</A>");
+					output.writeBytes("</BODY>");
+					output.writeBytes("</HTML>");
+				} catch (Exception exception) {
+					log(exception);
+				}
+			}
+		};
 		assertNotNull(server);
 		Logger log = server.getLogger();
 		assertNotNull(log);
