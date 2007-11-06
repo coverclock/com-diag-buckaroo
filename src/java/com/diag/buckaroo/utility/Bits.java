@@ -28,244 +28,268 @@ package com.diag.buckaroo.utility;
  */
 public class Bits {
 	
-	static byte msb(byte word) {
-		byte rc;
-		if ((word & 0xff) != 0) {
-			if ((word & 0xf0) != 0) {
-				if ((word & 0xc0) != 0) {
-					if ((word & 0x80) != 0) {
-						rc = (byte)0x80;
+	/**
+	 * Returns the bit position of the most significant bit in a byte. The bit
+	 * position is the argument to a logical shift operator to generate a mask
+	 * with the same bit set. For example, returning a 4 means the mask of the
+	 * most significant bit would be (1<<4).
+	 * @param datum is the byte.
+	 * @return a value in the range 0 to 7, or 8 if there are no bits set.
+	 */
+	static int msb(byte datum) {
+		int rc;
+		if ((datum & 0xff) != 0) {
+			if ((datum & 0xf0) != 0) {
+				if ((datum & 0xc0) != 0) {
+					if ((datum & 0x80) != 0) {
+						rc = 7;
 					} else {
-						rc = (byte)0x40;
+						rc = 6;
 					}
 				} else {
-					if ((word & 0x20) != 0) {
-						rc = (byte)0x20;
+					if ((datum & 0x20) != 0) {
+						rc = 5;
 					} else {
-						rc = (byte)0x10;
+						rc = 4;
 					}
 				}
 			} else {
-				if ((word & 0x0c) != 0) {
-					if ((word & 0x08) != 0) {
-						rc = (byte)0x08;
+				if ((datum & 0x0c) != 0) {
+					if ((datum & 0x08) != 0) {
+						rc = 3;
 					} else {
-						rc = (byte)0x04;
+						rc = 2;
 					}
 				} else {
-					if ((word & 0x02) != 0) {
-						rc = (byte)0x02;
+					if ((datum & 0x02) != 0) {
+						rc = 1;
 					} else {
-						rc = (byte)0x01;
+						rc = 0;
 					}
 				}
 			}
 		} else {
-			rc = (byte)0x00;
+			rc = 8;
 		}
 		return rc;
 	}
 	
-	static short msb(short word) {
-		short rc;
-		if ((word & 0xffff) != 0) {
-			if ((word & 0xff00) != 0) {
-				if ((word & 0xf000) != 0) {
-					if ((word & 0xc000) != 0) {
-						if ((word & 0x8000) != 0) {
-							rc = (short)0x8000;
+	/**
+	 * Returns the bit position of the most significant bit in a short. The bit
+	 * position is the argument to a logical shift operator to generate a mask
+	 * with the same bit set. For example, returning a 4 means the mask of the
+	 * most significant bit would be (1<<4).
+	 * @param datum is the short.
+	 * @return a value in the range 0 to 15, or 16 if there are no bits set.
+	 */
+	static int msb(short datum) {
+		int rc;
+		if ((datum & 0xffff) != 0) {
+			if ((datum & 0xff00) != 0) {
+				if ((datum & 0xf000) != 0) {
+					if ((datum & 0xc000) != 0) {
+						if ((datum & 0x8000) != 0) {
+							rc = 15;
 						} else {
-							rc = (short)0x4000;
+							rc = 14;
 						}
 					} else {
-						if ((word & 0x2000) != 0) {
-							rc = (short)0x2000;
+						if ((datum & 0x2000) != 0) {
+							rc = 13;
 						} else {
-							rc = (short)0x1000;
+							rc = 12;
 						}
 					}
 				} else {
-					if ((word & 0x0c00) != 0) {
-						if ((word & 0x0800) != 0) {
-							rc = (short)0x0800;
+					if ((datum & 0x0c00) != 0) {
+						if ((datum & 0x0800) != 0) {
+							rc = 11;
 						} else {
-							rc = (short)0x0400;
+							rc = 10;
 						}
 					} else {
-						if ((word & 0x0200) != 0) {
-							rc = (short)0x0200;
+						if ((datum & 0x0200) != 0) {
+							rc = 9;
 						} else {
-							rc = (short)0x0100;
+							rc = 8;
 						}
 					}
 				}
 			} else {
-				if ((word & 0x00f0) != 0) {
-					if ((word & 0x00c0) != 0) {
-						if ((word & 0x0080) != 0) {
-							rc = (short)0x0080;
+				if ((datum & 0x00f0) != 0) {
+					if ((datum & 0x00c0) != 0) {
+						if ((datum & 0x0080) != 0) {
+							rc = 7;
 						} else {
-							rc = (short)0x0040;
+							rc = 6;
 						}
 					} else {
-						if ((word & 0x0020) != 0) {
-							rc = (short)0x0020;
+						if ((datum & 0x0020) != 0) {
+							rc = 5;
 						} else {
-							rc = (short)0x0010;
+							rc = 4;
 						}
 					}
 				} else {
-					if ((word & 0x000c) != 0) {
-						if ((word & 0x0008) != 0) {
-							rc = (short)0x0008;
+					if ((datum & 0x000c) != 0) {
+						if ((datum & 0x0008) != 0) {
+							rc = 3;
 						} else {
-							rc = (short)0x0004;
+							rc = 2;
 						}
 					} else {
-						if ((word & 0x0002) != 0) {
-							rc = (short)0x0002;
+						if ((datum & 0x0002) != 0) {
+							rc = 1;
 						} else {
-							rc = (short)0x0001;
+							rc = 0;
 						}
 					}
 				}
 			}
 		} else {
-			rc = (short)0x0000;
+			rc = 16;
 		}
 		return rc;
 	}
 	
-	static int msb(int word) {
-		int rc = 0;
-		if ((word & 0xffffffff) != 0) {
-			if ((word & 0xffff0000) != 0) {
-				if ((word & 0xff000000) != 0) {
-					if ((word & 0xf0000000) != 0) {
-						if ((word & 0xc0000000) != 0) {
-							if ((word & 0x80000000) != 0) {
-								rc = (int)0x80000000;
+	/**
+	 * Returns the bit position of the most significant bit in an int. The bit
+	 * position is the argument to a logical shift operator to generate a mask
+	 * with the same bit set. For example, returning a 4 means the mask of the
+	 * most significant bit would be (1<<4).
+	 * @param datum is the int.
+	 * @return a value in the range 0 to 31, or 32 if there are no bits set.
+	 */
+	static int msb(int datum) {
+		int rc;
+		if ((datum & 0xffffffff) != 0) {
+			if ((datum & 0xffff0000) != 0) {
+				if ((datum & 0xff000000) != 0) {
+					if ((datum & 0xf0000000) != 0) {
+						if ((datum & 0xc0000000) != 0) {
+							if ((datum & 0x80000000) != 0) {
+								rc = 31;
 							} else {
-								rc = (int)0x40000000;
+								rc = 30;
 							}
 						} else {
-							if ((word & 0x20000000) != 0) {
-								rc = (int)0x20000000;
+							if ((datum & 0x20000000) != 0) {
+								rc = 29;
 							} else {
-								rc = (int)0x10000000;
+								rc = 28;
 							}
 						}
 					} else {
-						if ((word & 0x0c000000) != 0) {
-							if ((word & 0x08000000) != 0) {
-								rc = (int)0x08000000;
+						if ((datum & 0x0c000000) != 0) {
+							if ((datum & 0x08000000) != 0) {
+								rc = 27;
 							} else {
-								rc = (int)0x04000000;
+								rc = 26;
 							}
 						} else {
-							if ((word & 0x02000000) != 0) {
-								rc = (int)0x02000000;
+							if ((datum & 0x02000000) != 0) {
+								rc = 25;
 							} else {
-								rc = (int)0x01000000;
+								rc = 24;
 							}
 						}
 					}
 				} else {
-					if ((word & 0x00f00000) != 0) {
-						if ((word & 0x00c00000) != 0) {
-							if ((word & 0x00800000) != 0) {
-								rc = (int)0x00800000;
+					if ((datum & 0x00f00000) != 0) {
+						if ((datum & 0x00c00000) != 0) {
+							if ((datum & 0x00800000) != 0) {
+								rc = 23;
 							} else {
-								rc = (int)0x00400000;
+								rc = 22;
 							}
 						} else {
-							if ((word & 0x00200000) != 0) {
-								rc = (int)0x00200000;
+							if ((datum & 0x00200000) != 0) {
+								rc = 21;
 							} else {
-								rc = (int)0x00100000;
+								rc = 20;
 							}
 						}
 					} else {
-						if ((word & 0x000c0000) != 0) {
-							if ((word & 0x00080000) != 0) {
-								rc = (int)0x00080000;
+						if ((datum & 0x000c0000) != 0) {
+							if ((datum & 0x00080000) != 0) {
+								rc = 19;
 							} else {
-								rc = (int)0x00040000;
+								rc = 18;
 							}
 						} else {
-							if ((word & 0x00020000) != 0) {
-								rc = (int)0x00020000;
+							if ((datum & 0x00020000) != 0) {
+								rc = 17;
 							} else {
-								rc = (int)0x00010000;
+								rc = 16;
 							}
 						}
 					}
 				}
 			} else {
-				if ((word & 0x0000ff00) != 0) {
-					if ((word & 0x0000f000) != 0) {
-						if ((word & 0x0000c000) != 0) {
-							if ((word & 0x00008000) != 0) {
-								rc = (int)0x00008000;
+				if ((datum & 0x0000ff00) != 0) {
+					if ((datum & 0x0000f000) != 0) {
+						if ((datum & 0x0000c000) != 0) {
+							if ((datum & 0x00008000) != 0) {
+								rc = 15;
 							} else {
-								rc = (int)0x00004000;
+								rc = 14;
 							}
 						} else {
-							if ((word & 0x00002000) != 0) {
-								rc = (int)0x00002000;
+							if ((datum & 0x00002000) != 0) {
+								rc = 13;
 							} else {
-								rc = (int)0x00001000;
+								rc = 12;
 							}
 						}
 					} else {
-						if ((word & 0x00000c00) != 0) {
-							if ((word & 0x00000800) != 0) {
-								rc = (int)0x00000800;
+						if ((datum & 0x00000c00) != 0) {
+							if ((datum & 0x00000800) != 0) {
+								rc = 11;
 							} else {
-								rc = (int)0x00000400;
+								rc = 10;
 							}
 						} else {
-							if ((word & 0x00000200) != 0) {
-								rc = (int)0x00000200;
+							if ((datum & 0x00000200) != 0) {
+								rc = 9;
 							} else {
-								rc = (int)0x00000100;
+								rc = 8;
 							}
 						}
 					}
 				} else {
-					if ((word & 0x000000f0) != 0) {
-						if ((word & 0x000000c0) != 0) {
-							if ((word & 0x00000080) != 0) {
-								rc = (int)0x00000080;
+					if ((datum & 0x000000f0) != 0) {
+						if ((datum & 0x000000c0) != 0) {
+							if ((datum & 0x00000080) != 0) {
+								rc = 7;
 							} else {
-								rc = (int)0x00000040;
+								rc = 6;
 							}
 						} else {
-							if ((word & 0x00000020) != 0) {
-								rc = (int)0x00000020;
+							if ((datum & 0x00000020) != 0) {
+								rc = 5;
 							} else {
-								rc = (int)0x00000010;
+								rc = 4;
 							}
 						}
 					} else {
-						if ((word & 0x0000000c) != 0) {
-							if ((word & 0x00000008) != 0) {
-								rc = (int)0x00000008;
+						if ((datum & 0x0000000c) != 0) {
+							if ((datum & 0x00000008) != 0) {
+								rc = 3;
 							} else {
-								rc = (int)0x00000004;
+								rc = 2;
 							}
 						} else {
-							if ((word & 0x00000002) != 0) {
-								rc = (int)0x00000002;
+							if ((datum & 0x00000002) != 0) {
+								rc = 1;
 							} else {
-								rc = (int)0x00000001;
+								rc = 0;
 							}
 						}
 					}
 				}
 			}
 		} else {
-			rc = (int)0x00000000;
+			rc = 32;
 		}
 		return rc;
 	}
