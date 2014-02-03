@@ -2,8 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="BUCKAROO_LIBS_HOME/junit4.3.1/junit-4.3.1.jar"/>
 	<classpathentry kind="src" path="test/java"/>
-	<classpathentry kind="var" path="BUCKAROO_LIBS_HOME/apache-ant-1.7.0/lib/ant-junit.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="eclipse_output"/>
 </classpath>
