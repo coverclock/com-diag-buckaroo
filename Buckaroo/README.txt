@@ -1,3 +1,5 @@
+Copyright 2013 Digital Aggregates Corporation, Colorado, USA.
+
 This is the Digital Aggregates Corporation Buckaroo package. Buckaroo is a
 collection of Java classes that the author has found useful in his own work.
 Buckaroo is an original work of its author.

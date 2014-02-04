@@ -1,5 +1,5 @@
 /**
- * Copyright 2007 Digital Aggregates Corp., Arvada CO 80001-0597, USA.
+ * Copyright 2007-2013 Digital Aggregates Corporation, Colorado, USA.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import java.text.SimpleDateFormat;
  */
 public class Server {
 
-	private int port = 8080;
+	private int port = 8080; // MacOS X won't let me bind to 80.
 	private String root = null;
 	private boolean enabled = false;
 	private Listener listener = null;
@@ -175,7 +175,7 @@ public class Server {
 	
 	/**
 	 * Sets the path prefix used by this Server.
-	 * @param port is a path prefix.
+	 * @param root is a path prefix.
 	 * @return this object.
 	 */
 	public Server setRoot(String root) {

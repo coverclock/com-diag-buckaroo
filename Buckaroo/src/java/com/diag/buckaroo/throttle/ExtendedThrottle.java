@@ -1,5 +1,5 @@
 /**
- * Copyright 2007 Digital Aggregates Corp., Arvada CO 80001-0597, USA.
+ * Copyright 2007-2013 Digital Aggregates Corporation, Colorado, USA.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

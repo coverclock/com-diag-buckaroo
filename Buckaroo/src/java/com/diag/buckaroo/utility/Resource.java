@@ -1,5 +1,5 @@
 /**
- * Copyright 2006 Digital Aggregates Corp., Arvada CO 80001-0597, USA.
+ * Copyright 2006-2013 Digital Aggregates Corporation, Colorado, USA.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class Resource {
 		return (name != null) && (
 					   name.startsWith("./") ||
 					   name.startsWith(".\\") ||
-					   name.matches("[a-zA-Z]:\\.\\\\.*")
+					   name.matches("^[a-zA-Z]:\\.\\\\.*$")
 			   ) ? new File(name) : null;
 	}
 	
@@ -77,7 +77,7 @@ public class Resource {
 		return (name != null) && (
 					name.startsWith("/") ||
 		        	name.startsWith("\\") ||
-		        	name.matches("[A-Za-z]:\\\\.*")
+		        	name.matches("^[A-Za-z]:\\\\.*$")
 		        ) ? new File(name) : null;
 	}
 	
@@ -119,11 +119,17 @@ public class Resource {
 			}
 			if (stream != null) { break; }
 			if (name != null) {
+				String name2 = new String(name).replaceAll("\\\\", "/");
+				file = isPathLike(name2);
+				if (file != null) {
+					try { stream = new FileInputStream(file); } catch (Exception ignore) { }
+				}
+				if (stream != null) { break; }
 				ClassLoader loader = Resource.class.getClassLoader();
 				if (loader == null) { loader = ClassLoader.getSystemClassLoader(); }
 				stream = loader.getResourceAsStream(name);
+				if (stream != null) { break; }
 			}
-			if (stream != null) { break; }
 			throw new FileNotFoundException(name);
 		} while (false);
 		return stream;
