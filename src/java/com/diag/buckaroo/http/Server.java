@@ -43,7 +43,7 @@ import java.text.SimpleDateFormat;
  */
 public class Server {
 
-	private int port = 80;
+	private int port = 8080;
 	private String root = null;
 	private boolean enabled = false;
 	private Listener listener = null;
