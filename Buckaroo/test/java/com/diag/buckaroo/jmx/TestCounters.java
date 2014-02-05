@@ -113,7 +113,7 @@ public class TestCounters extends TestCase {
 		}
 	}
 	
-	private void validate5(long one, long two, long three, long four, long five) {
+	private void validate5(int one, int two, int three, int four, int five) {
 		assertEquals(counters.get(Counter.ONE), one);
 		assertEquals(counters.get(Counter.TWO), two);
 		assertEquals(counters.get(Counter.THREE), three);
@@ -157,7 +157,7 @@ public class TestCounters extends TestCase {
 		}
 	}
 	
-	private void validate(Object that, String keyword, long value) {
+	private void validate(Object that, String keyword, int value) {
 		try {
 			assertNotNull(that);
 			assertTrue(that instanceof Attribute);
@@ -167,20 +167,20 @@ public class TestCounters extends TestCase {
 			assertEquals(name, keyword);
 			Object object = attribute.getValue();
 			assertNotNull(object);
-			assertTrue(object instanceof Long);
-			assertEquals(((Long)object).longValue(), value);
+			assertTrue(object instanceof Integer);
+			assertEquals(((Integer)object).intValue(), value);
 		} catch (Exception exception) {
 			exception.printStackTrace(System.err);
 			fail(exception.toString());
 		}
 	}
 	
-	private void validate(String keyword, long value) {
+	private void validate(String keyword, int value) {
 		try {
 			Object object = counters.getAttribute(keyword);
 			assertNotNull(object);
-			assertTrue(object instanceof Long);
-			assertEquals(((Long)object).longValue(), value);
+			assertTrue(object instanceof Integer);
+			assertEquals(((Integer)object).intValue(), value);
 		} catch (Exception exception) {
 			exception.printStackTrace(System.err);
 			fail(exception.toString());
@@ -188,10 +188,10 @@ public class TestCounters extends TestCase {
 	}
 	
 	public void test06GetSetAttribute() {
-		long fortytwo = 42;
+		int fortytwo = 42;
 		changing = 0;
 		changed[0] = null;
-		Attribute attribute = new Attribute(Counter.THREE.toString(), new Long(fortytwo));
+		Attribute attribute = new Attribute(Counter.THREE.toString(), new Integer(fortytwo));
 		try {
 			counters.setAttribute(attribute);
 		} catch (Exception exception) {
@@ -259,9 +259,9 @@ public class TestCounters extends TestCase {
 		changing = 0;
 		changed[0] = null;
 		changed[1] = null;
-		Attribute attribute = new Attribute(Counter.ONE.toString(), new Long(6));
+		Attribute attribute = new Attribute(Counter.ONE.toString(), new Integer(6));
 		list.set(index[0], attribute);
-		attribute = new Attribute(Counter.THREE.toString(), new Long(7));
+		attribute = new Attribute(Counter.THREE.toString(), new Integer(7));
 		list.set(index[2], attribute);
 		list = counters.setAttributes(list);
 		assertNotNull(list);

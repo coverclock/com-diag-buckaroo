@@ -1,7 +1,11 @@
 Copyright 2013 Digital Aggregates Corporation, Colorado, USA.
 
 This is the Digital Aggregates Corporation Buckaroo package. Buckaroo is a
-collection of Java classes that the author has found useful in his own work.
+collection of Java classes that includes traffic shaping and rate limiting
+throttles, Instant Managed Beans that allow you to trivially export system
+status and management information via the JMX console, and some other useful
+(and experimental) stuff.
+
 Buckaroo is an original work of its author.
 
 Backaroo is licensed under the Apache License, Version 2.0 (the "License"); you

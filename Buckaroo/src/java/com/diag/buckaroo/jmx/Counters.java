@@ -36,7 +36,7 @@ import javax.management.ReflectionException;
 import com.diag.buckaroo.jmx.CallBack;
 
 /**
- * This class encapsulates an array of long integers that can be used
+ * This class encapsulates an array of int integers that can be used
  * in an application as simple counters. The array is sized, labeled,
  * and indexed solely by an enumeration provided at time of construction.
  * The array is exposed as a dynamic managed bean with each array position
@@ -55,7 +55,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 
 	protected final static String RESET = "reset";
 	
-	private long[] counters;
+	private int[] counters;
 	private Enum<?>[] constants;
 	private MBeanInfo info;
 	private volatile CallBack callback;
@@ -67,13 +67,13 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 */
 	public Counters(Class<? extends Enum<?>> type) {
 		constants = type.getEnumConstants();
-		counters = new long[constants.length];
+		counters = new int[constants.length];
 		MBeanAttributeInfo[] attributes = new MBeanAttributeInfo[constants.length];
-		String longName = Long.class.getCanonicalName();
+		String intName = Integer.class.getCanonicalName();
 		for (int ii = 0; ii < attributes.length; ++ii) {
 			Enum<? extends Enum<?>> constant = constants[ii];
 			String name = constant.toString();
-			attributes[ii] = new MBeanAttributeInfo(name, longName, name, true, true, false);
+			attributes[ii] = new MBeanAttributeInfo(name, intName, name, true, true, false);
 		}
 		MBeanOperationInfo[] operations = null;
 		try {
@@ -114,7 +114,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param value is the value to be added (may be negative).
 	 * @return the new value of the counter.
 	 */
-	public synchronized long add(Enum<? extends Enum<?>> enumeration, long value) {
+	public synchronized int add(Enum<? extends Enum<?>> enumeration, int value) {
 		int index = enumeration.ordinal();
 		return counters[index] = counters[index] + value;
 	}
@@ -124,7 +124,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param enumeration identifies the counter.
 	 * @return the new value of the counter.
 	 */
-	public long inc(Enum<? extends Enum<?>> enumeration) {
+	public int inc(Enum<? extends Enum<?>> enumeration) {
 		return add(enumeration, 1);
 	}
 	
@@ -133,7 +133,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param enumeration identifies the counter.
 	 * @return the new value of the counter.
 	 */
-	public long dec(Enum<? extends Enum<?>> enumeration) {
+	public int dec(Enum<? extends Enum<?>> enumeration) {
 		return add(enumeration, -1);
 	}
 	
@@ -143,7 +143,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param value is the new vlaue.
 	 * @return the new value of the counter.
 	 */
-	public synchronized long min(Enum<? extends Enum<?>> enumeration, long value) {
+	public synchronized int min(Enum<? extends Enum<?>> enumeration, int value) {
 		int index = enumeration.ordinal();
 		if (value < counters[index]) { counters[index] = value; }
 		return counters[index];
@@ -155,7 +155,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param value is the new value.
 	 * @return the new value of the counter.
 	 */
-	public synchronized long max(Enum<? extends Enum<?>> enumeration, long value) {
+	public synchronized int max(Enum<? extends Enum<?>> enumeration, int value) {
 		int index = enumeration.ordinal();
 		if (value > counters[index]) { counters[index] = value; }
 		return counters[index];
@@ -167,7 +167,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param value is the new value.
 	 * @return the new value of the counter.
 	 */
-	public synchronized long set(Enum<? extends Enum<?>> enumeration, long value) {
+	public synchronized int set(Enum<? extends Enum<?>> enumeration, int value) {
 		return counters[enumeration.ordinal()] = value;
 	}
 	
@@ -176,7 +176,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param enumeration identifies a counter.
 	 * @return the value of the counter.
 	 */
-	public synchronized long get(Enum<? extends Enum<?>> enumeration) {
+	public synchronized int get(Enum<? extends Enum<?>> enumeration) {
 		return counters[enumeration.ordinal()];
 	}
 	
@@ -185,7 +185,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	 * @param enumeration identifies the counter.
 	 * @return the new value of the counter.
 	 */
-	public long clear(Enum<? extends Enum<?>> enumeration) {
+	public int clear(Enum<? extends Enum<?>> enumeration) {
 		return set(enumeration, 0);
 	}
 	
@@ -220,18 +220,18 @@ public class Counters extends LifeCycle implements DynamicMBean {
 	}
 
 	public synchronized Object getAttribute(String name) throws AttributeNotFoundException {
-		return new Long(counters[find1(name)]);
+		return new Integer(counters[find1(name)]);
 	}
 	
 	public void setAttribute(Attribute attribute) throws AttributeNotFoundException, InvalidAttributeValueException, MBeanException, ReflectionException {
 		try {
 			String name = attribute.getName();
-			long prior;
-			long subsequent;
+			int prior;
+			int subsequent;
 			synchronized (this) {
 				int index = find1(name);
 				prior = counters[index];
-				subsequent = ((Long)attribute.getValue()).longValue();
+				subsequent = ((Integer)attribute.getValue()).intValue();
 				counters[index] = subsequent;
 			}
 			if ((callback != null) && (prior != subsequent)) { callback.callback(name); }
@@ -248,7 +248,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 			for (String name : names) {
 				int index = find2(name);
 				if (index >= 0) {
-					Attribute attribute = new Attribute(name, new Long(counters[index]));
+					Attribute attribute = new Attribute(name, new Integer(counters[index]));
 					attributes.add(attribute);
 				}
 			}
@@ -266,12 +266,12 @@ public class Counters extends LifeCycle implements DynamicMBean {
 				String name = before.getName();
 				int index = find2(name);
 				if (index >= 0) {
-					Long object = (Long)before.getValue();
-					long prior = counters[index];
-					long subsequent = object.longValue();
+					Integer object = (Integer)before.getValue();
+					int prior = counters[index];
+					int subsequent = object.intValue();
 					counters[index] = subsequent;
 					if (prior != subsequent) { names[index] = name; }
-					Attribute after = new Attribute(name, new Long(subsequent));
+					Attribute after = new Attribute(name, new Integer(subsequent));
 					results.add(after);
 				}
 			}
@@ -292,7 +292,7 @@ public class Counters extends LifeCycle implements DynamicMBean {
 			synchronized (this) {
 				for (Enum<?> constant : constants) {
 					int index = constant.ordinal();
-					long prior = counters[index];
+					int prior = counters[index];
 					counters[index] = 0;
 					if (prior != 0) {
 						names[index] = constant.toString();
