@@ -11,7 +11,7 @@ SYMBOL				=	BUCKAROO
 
 SVN_URL				=	svn://graphite/$(PROJECT)/trunk/$(TITLE)
 HTTP_URL			=	http://www.diag.com/navigation/downloads/$(TITLE).html
-GIT_URL				=	https://github.com/coverclock/com-diag-$(PROJECT)
+GIT_URL				=	https://github.com/coverclock/com-diag-$(PROJECT).git
 
 commit:
 	git commit .
