@@ -1,4 +1,4 @@
-Copyright 2013 Digital Aggregates Corporation, Colorado, USA.
+Copyright 2006-2014 Digital Aggregates Corporation, Colorado, USA.
 
 This is the Digital Aggregates Corporation Buckaroo package. Buckaroo is a
 collection of Java classes that includes traffic shaping and rate limiting
